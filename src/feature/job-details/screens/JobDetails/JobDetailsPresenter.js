@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, Pressable, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import moment from 'moment';
+import * as Clipboard from 'expo-clipboard';
 import {
   collection,
   query,
@@ -229,6 +230,16 @@ const JobDetailsPresenter = ({
     getEmployees();
   }, []);
 
+  const handleCopyAddress = async () => {
+    await Clipboard.setStringAsync(calendarData?.customer?.address[0]);
+    alert('Address copied to clipboard');
+  };
+
+  const handleCopyPhone = async () => {
+    await Clipboard.setStringAsync(calendarData?.customer?.phone.mobile);
+    alert('Phone number copied to clipboard');
+  };
+
   return (
     <View
       style={{
@@ -246,7 +257,7 @@ const JobDetailsPresenter = ({
           </View>
           <View style={styles.customerInfoBox}>
             <View>
-              <Text>{calendarData?.customer?.displayName}</Text>
+              <Text style={styles.customerInfoText}>{calendarData?.customer?.displayName}</Text>
               <View
                 style={{
                   flexDirection: 'row',
@@ -255,8 +266,10 @@ const JobDetailsPresenter = ({
                 }}>
                 <Text
                   style={{
+                    ...styles.customerInfoText,
                     paddingRight: 5,
-                  }}>
+                  }}
+                  onLongPress={handleCopyPhone}>
                   {calendarData?.customer?.phone?.mobile &&
                     '(' +
                       calendarData?.customer?.phone?.mobile.substring(2, 5) +
@@ -266,16 +279,26 @@ const JobDetailsPresenter = ({
                       calendarData?.customer?.phone?.mobile.substring(8, 12)}
                 </Text>
                 <Pressable
-                  onPress={() =>
-                    navigation.navigate(SCREENS.CHAT, {
-                      name: calendarData.customer.displayName,
-                      phone: calendarData.customer.phone.mobile,
-                    })
-                  }>
+                  onPress={() => {
+                    console.log('calednar data', calendarData);
+                    navigation.navigate(SCREENS.CHATNAVIGATOR, {
+                      screen: SCREENS.CHAT,
+                      params: {
+                        name: calendarData.customer.displayName,
+                        phone: calendarData.customer.phone.mobile,
+                        fromJobDetails: true,
+                        calendarData,
+                      },
+                    });
+                  }}>
                   <Image style={styles.messageIcon} resizeMode="contain" source={commentIcon} />
                 </Pressable>
               </View>
-              <Text style={{ paddingVertical: spacing.SCALE_10 }}>{calendarData?.customer?.address[0]}</Text>
+              <Text
+                style={{ ...styles.customerInfoText, paddingVertical: spacing.SCALE_10 }}
+                onLongPress={handleCopyAddress}>
+                {calendarData?.customer?.address[0]}
+              </Text>
             </View>
           </View>
         </View>
@@ -523,6 +546,11 @@ const styles = StyleSheet.create({
     padding: spacing.SCALE_10,
     justifyContent: 'space-between',
     borderRadius: spacing.SCALE_6,
+  },
+  customerInfoText: {
+    fontSize: typography.FONT_SIZE_16,
+    color: '#111827',
+    fontFamily: typography.primary,
   },
   messageIcon: {
     height: spacing.SCALE_20,

@@ -12,11 +12,15 @@ const styles = StyleSheet.create({
   },
 });
 
-const GoBackButton = ({ onPress = null }) => {
+const GoBackButton = ({ onPress = null, customNavigate = null }) => {
   const navigation = useNavigation();
 
   const handleBackPress = () => {
-    navigation.goBack();
+    if (customNavigate) {
+      customNavigate();
+    } else {
+      navigation.goBack();
+    }
   };
 
   return (

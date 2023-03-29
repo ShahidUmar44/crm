@@ -10,8 +10,8 @@ import { db } from '../../../../utils/Firebase';
 import JobDetailsPresenter from './JobDetailsPresenter';
 
 const JobDetailsCotainer = ({ route }) => {
-  // let calendarData = route?.params?.calendarData;
-  const calendarData = jobDetails;
+  const calendarData = route?.params?.calendarData;
+  // const calendarData = jobDetails;
   console.log('🚀 ~ file: JobDetailsCotainer.js:10 ~ JobDetailsCotainer ~ calendarData:', calendarData);
 
   const { userData } = useContext(UserContext);

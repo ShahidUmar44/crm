@@ -13,6 +13,8 @@ import {
   doc,
   Timestamp,
 } from 'firebase/firestore';
+import { useNavigation, CommonActions } from '@react-navigation/native';
+import { SCREENS } from '../../../../constants';
 
 import { auth, db } from '../../../../utils/Firebase';
 import { node } from '../../../../constants/index';
@@ -20,9 +22,11 @@ import { UserContext } from '../../../../context/UserContext';
 import { colors, spacing, typography } from '../../../../theme';
 import GoBackButton from '../../../../shared/buttons/GoBackButton';
 
-const ChatScreenPresenter = ({ phone, name }) => {
+const ChatScreenPresenter = ({ phone, name, fromJobDetails, calendarData }) => {
   const { userData } = useContext(UserContext);
   const [messages, setMessages] = useState([]);
+
+  const navigation = useNavigation();
 
   console.log('phone', phone);
   console.log('name', name);
@@ -99,13 +103,35 @@ const ChatScreenPresenter = ({ phone, name }) => {
     }
   }, []);
 
+  const resetChatStack = () => {
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{ name: SCREENS.CHAT_INBOX_LIST }],
+      }),
+    );
+  };
+
+  const customNavigate = () => {
+    console.log('calendarData from chat navigator', calendarData);
+    navigation.dispatch(
+      CommonActions.navigate({
+        name: SCREENS.JOBDETAILS,
+        key: 'JobDetails', // You may need to replace this with the actual key of the JobDetails screen in your navigation
+        params: { calendarData },
+      }),
+    );
+
+    resetChatStack();
+  };
+
   return (
     <>
       <StatusBar backgroundColor="transparent" barStyle="dark-content" hidden={false} />
       <View style={{ flex: 1 }}>
         <View style={styles.headerWrapper}>
           <View style={{ flex: 1 }}>
-            <GoBackButton />
+            <GoBackButton customNavigate={fromJobDetails ? customNavigate : null} />
           </View>
           <Text style={styles.header}>
             {name || '(' + phone.substring(2, 5) + ') ' + phone.substring(5, 8) + '-' + phone.substring(8, 12)}
