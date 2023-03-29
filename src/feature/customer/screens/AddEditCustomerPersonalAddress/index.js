@@ -1,0 +1,3 @@
+import AddEditCustomerPersonalAddressContainer from './AddEditCustomerPersonalAddressContainer';
+
+export default AddEditCustomerPersonalAddressContainer;
