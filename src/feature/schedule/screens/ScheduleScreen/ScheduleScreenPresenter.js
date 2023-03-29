@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import moment from 'moment';
 import { TimelineCalendar } from '@howljs/calendar-kit';
@@ -8,28 +8,36 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SCREENS } from '../../../../constants';
 import { colors, spacing } from '../../../../theme';
 
-const ScheduleScreenPresenter = ({ responseData }) => {
+const ScheduleScreenPresenter = ({ responseData, loading }) => {
   const { bottom: safeBottom } = useSafeAreaInsets();
   const navigation = useNavigation();
   const [viewMode, setViewMode] = useState('day');
 
+  console.log('we are here on presener screen');
+  // useEffect(() => {
+  //   console.log('jobs', responseData);
+  // }, [responseData]);
+
   const calendarRef = useRef(null);
   //set Events
-  let eventArr = [];
+  const eventArr =
+    responseData?.map(item => {
+      return {
+        id: item.jobId,
+        title: item.customer.displayName,
+        // description:
+        description: 'test description',
+        start: moment(item.start.toDate()),
+        end: moment(item.end.toDate()),
+        color: '#B1AFFF',
+      };
+    }) || [];
 
-  responseData?.forEach(item => {
-    let object = {
-      id: item.jobId,
-      title: item.customer.displayName,
-      start: moment(item.start).subtract(moment().utcOffset(), 'minutes').toISOString(),
-      end: moment(item.end).subtract(moment().utcOffset(), 'minutes').toISOString(),
-      color: '#B1AFFF',
-    };
-    eventArr.push(object);
-  });
+  console.log('eventArr', eventArr);
 
   // onselect
   const onSelected = event => {
+    console.log('event', event);
     const selectedEvent = responseData.find(item => item.jobId === event.id);
     navigation.navigate(SCREENS.JOBDETAILS, { calendarData: selectedEvent });
   };
@@ -61,20 +69,25 @@ const ScheduleScreenPresenter = ({ responseData }) => {
       <TimelineCalendar
         ref={calendarRef}
         viewMode={viewMode}
+        isLoading={loading}
         allowPinchToZoom
         allowDragToCreate
         events={eventArr}
+        onLongPressBackground={date => console.log('long press background', date)}
+        start={4}
+        end={24}
+        hourFormat="HH:mm a"
         onPressEvent={onSelected}
         theme={{
           unavailableBackgroundColor: 'transparent',
           //Saturday style
-          saturdayName: { color: 'blue' },
-          saturdayNumber: { color: 'blue' },
+          saturdayName: { color: 'black' },
+          saturdayNumber: { color: 'black' },
           saturdayNumberContainer: { backgroundColor: 'white' },
 
           //Sunday style
-          sundayName: { color: 'red' },
-          sundayNumber: { color: 'red' },
+          sundayName: { color: 'black' },
+          sundayNumber: { color: 'black' },
           sundayNumberContainer: { backgroundColor: 'white' },
 
           //Today style
@@ -87,10 +100,12 @@ const ScheduleScreenPresenter = ({ responseData }) => {
           dayNumber: { color: 'black' },
           dayNumberContainer: { backgroundColor: 'white' },
           allowFontScaling: false,
+
+          //loading bar
+          loadingBarColor: '#fde047',
         }}
         locale="en"
-        useHaptic
-        timeZone="Asia/Tokyo"
+        timeZone="America/Los_Angeles"
       />
     </View>
   );

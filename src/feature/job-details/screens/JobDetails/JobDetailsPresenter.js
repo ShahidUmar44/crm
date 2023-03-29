@@ -40,6 +40,7 @@ import playIcon from '../../../../../assets/images/playIcon.png';
 import truckIcon from '../../../../../assets/images/truckIcon.png';
 import finishIcon from '../../../../../assets/images/finishIcon.png';
 import messageIcon from '../../../../../assets/images/messageIcon.png';
+import commentIcon from '../../../../../assets/images/comment.png';
 import star from '../../../../../assets/images/star.png';
 
 import car from '../../../../../assets/images/car.png';
@@ -72,6 +73,9 @@ const JobDetailsPresenter = ({
   const [drive, setDrive] = useState({ drive: true, onTheWay: false, arrived: false });
   const [start, setStart] = useState({ start: true, inProgress: false, finish: false });
   const [showAccordian, setshowAccordian] = useState(false);
+
+  const [combinedStartTime, setCombinedStartTime] = useState(calendarData?.start);
+  const [combinedEndTime, setCombinedEndTime] = useState(calendarData?.end);
 
   // useEffect to set drive to the correct state
   useEffect(() => {
@@ -243,26 +247,36 @@ const JobDetailsPresenter = ({
           <View style={styles.customerInfoBox}>
             <View>
               <Text>{calendarData?.customer?.displayName}</Text>
-              <Text>{calendarData?.customer?.address[0]}</Text>
-              <Text>
-                {calendarData?.customer?.phone?.mobile &&
-                  '(' +
-                    calendarData?.customer?.phone?.mobile.substring(2, 5) +
-                    ') ' +
-                    calendarData?.customer?.phone?.mobile.substring(5, 8) +
-                    '-' +
-                    calendarData?.customer?.phone?.mobile.substring(8, 12)}
-              </Text>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  paddingTop: spacing.SCALE_10,
+                }}>
+                <Text
+                  style={{
+                    paddingRight: 5,
+                  }}>
+                  {calendarData?.customer?.phone?.mobile &&
+                    '(' +
+                      calendarData?.customer?.phone?.mobile.substring(2, 5) +
+                      ') ' +
+                      calendarData?.customer?.phone?.mobile.substring(5, 8) +
+                      '-' +
+                      calendarData?.customer?.phone?.mobile.substring(8, 12)}
+                </Text>
+                <Pressable
+                  onPress={() =>
+                    navigation.navigate(SCREENS.CHAT, {
+                      name: calendarData.customer.displayName,
+                      phone: calendarData.customer.phone.mobile,
+                    })
+                  }>
+                  <Image style={styles.messageIcon} resizeMode="contain" source={commentIcon} />
+                </Pressable>
+              </View>
+              <Text style={{ paddingVertical: spacing.SCALE_10 }}>{calendarData?.customer?.address[0]}</Text>
             </View>
-            <Pressable
-              onPress={() =>
-                navigation.navigate(SCREENS.CHAT, {
-                  name: calendarData.customer.displayName,
-                  phone: calendarData.customer.phone.mobile,
-                })
-              }>
-              <Image style={styles.messageIcon} resizeMode="contain" source={messageIcon} />
-            </Pressable>
           </View>
         </View>
         <View style={styles.buttonView}>
@@ -380,6 +394,8 @@ const JobDetailsPresenter = ({
           defaultStartTime={formattedStartTime !== 'NaN:NaN AM' ? formattedStartTime : moment().format('hh:mm A')}
           defaultEndDate={formattedEndDate !== `NaN/NaN/NaN` ? formattedEndDate : moment().format('MM/DD/YYYY')}
           defaultEndTime={formattedEndTime !== 'NaN:NaN AM' ? formattedEndTime : moment().format('hh:mm A')}
+          setCombinedEndTime={setCombinedEndTime}
+          setCombinedStartTime={setCombinedStartTime}
         />
         <DispatchInvoices data={calendarData?.dispatchedTo} />
         <JobTags
