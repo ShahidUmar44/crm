@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, Pressable } from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
 import moment from 'moment';
 
@@ -18,13 +18,14 @@ const Schedule = ({
   defaultEndTime,
   setCombinedEndTime,
   setCombinedStartTime,
+  setShowSchedule,
 }) => {
   const navigation = useNavigation();
   const { setStart, setEnd } = useContext(AppContext);
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
-  const [startTime, setStartTime] = useState(null);
-  const [endTime, setEndTime] = useState(null);
+  const [startDate, setStartDate] = useState(defaultStartDate);
+  const [endDate, setEndDate] = useState(defaultEndDate);
+  const [startTime, setStartTime] = useState(defaultStartTime);
+  const [endTime, setEndTime] = useState(defaultEndTime);
 
   const [timesWrong, setTimesWrong] = useState(false);
   const [datesWrong, setDatesWrong] = useState(false);
@@ -32,6 +33,11 @@ const Schedule = ({
   const initialCombinedStartTime = moment(`${defaultStartDate} ${defaultStartTime}`, 'MM/DD/YYYY hh:mm A').toDate();
 
   const initialCombinedEndTime = moment(`${defaultEndDate} ${defaultEndTime}`, 'MM/DD/YYYY hh:mm A').toDate();
+
+  // console.log('defaultStartDate from schedule', defaultStartDate);
+  // console.log('startDate from schedule', startDate);
+  // console.log('defaultstartime from schedule', defaultStartTime);
+  // console.log('startTime from schedule', startTime);
 
   useEffect(() => {
     if (!startTime) return;
@@ -110,6 +116,11 @@ const Schedule = ({
     <View style={styles.scheduleView}>
       <View style={styles.scheduleInfoHeaderView}>
         <Text style={styles.scheduleHeader}>Schedule </Text>
+        {/* {setShowSchedule && (
+          <Pressable onPress={() => setShowSchedule(false)}>
+            <Text style={styles.scheduleHeader}>Cancel</Text>
+          </Pressable>
+        )} */}
       </View>
       <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', marginTop: spacing.SCALE_20 }}>
         <View style={[styles.dateField, datesWrong ? { backgroundColor: '#f87171' } : {}]}>

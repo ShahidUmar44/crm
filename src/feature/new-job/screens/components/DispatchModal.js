@@ -4,15 +4,19 @@ import { View, StyleSheet, Text } from 'react-native';
 import { colors, SCALE_10, spacing, typography } from '../../../../theme';
 import MultipleSelectDropDown from '../../../../shared/drop-down/MultipleSelectDropDown';
 
-const DispatchModal = ({ data, setSelectUser }) => {
+const DispatchModal = ({ data, setSelectUser, selectUser }) => {
   return (
     <View style={styles.container}>
       <View style={styles.dipatchView}>
         <View style={styles.dispatchHeaderView}>
           <Text style={styles.header}>Dispatch to</Text>
         </View>
-        <View style={{ paddingBottom: spacing.SCALE_10, paddingHorizontal: 5 }}>
-          <MultipleSelectDropDown data={data} setSelectUser={setSelectUser} />
+        <View
+          style={{
+            paddingBottom: spacing.SCALE_10,
+            paddingHorizontal: 5,
+          }}>
+          <MultipleSelectDropDown data={data} setSelectUser={setSelectUser} selectUser={selectUser} />
         </View>
       </View>
     </View>
@@ -21,6 +25,7 @@ const DispatchModal = ({ data, setSelectUser }) => {
 
 const styles = StyleSheet.create({
   container: {
+    paddingTop: spacing.SCALE_10,
     flex: 1,
   },
   dipatchView: {

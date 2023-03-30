@@ -1,5 +1,16 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Pressable, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  Pressable,
+  ScrollView,
+  Modal,
+  TouchableWithoutFeedback,
+  Keyboard,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import moment from 'moment';
 import * as Clipboard from 'expo-clipboard';
@@ -27,6 +38,7 @@ import Notes from './components/Notes';
 import { SCREENS } from '../../../../constants';
 import JobTags from '../../../../shared/job-tags/JobTags';
 import Schedule from '../../../../shared/schedule/Schedule';
+import ShowSchedule from './components/ShowSchedule';
 import DispatchInvoices from './components/DispatchInvoices';
 import BigButton from '../../../../shared/buttons/BigButton';
 import Accordian from '../../../../shared/accordain/Accordian';
@@ -36,6 +48,7 @@ import ServicesModal from '../../../../shared/modals/ServicesModal';
 import JobSource from '../../../new-job/screens/components/JobSource';
 import AddDiscountModal from '../../../estimate/components/AddDiscountModal';
 import { UserContext } from '../../../../context/UserContext';
+import DispatchModal from '../../../new-job/screens/components/DispatchModal';
 
 import playIcon from '../../../../../assets/images/playIcon.png';
 import truckIcon from '../../../../../assets/images/truckIcon.png';
@@ -43,7 +56,9 @@ import finishIcon from '../../../../../assets/images/finishIcon.png';
 import messageIcon from '../../../../../assets/images/messageIcon.png';
 import commentIcon from '../../../../../assets/images/comment.png';
 import star from '../../../../../assets/images/star.png';
-
+import closeIcon from '../../../../../assets/images/reject.png';
+import confirmIcon from '../../../../../assets/images/confirm.png';
+import saveIcon from '../../../../../assets/images/save.png';
 import car from '../../../../../assets/images/car.png';
 
 const JobDetailsPresenter = ({
@@ -53,31 +68,41 @@ const JobDetailsPresenter = ({
   handleStartTime,
   handleEndTime,
   sendReview,
+  users,
 }) => {
   const { user, userData } = useContext(UserContext);
   const navigation = useNavigation();
   const [keyword, setKeyword] = useState('');
   const [keywordArr, setKeywordArr] = useState(calendarData?.jobTags ? calendarData?.jobTags : []);
-  const [arr, setArr] = useState(calendarData?.lineItem ? calendarData?.lineItem : []);
+  const [lineItems, setLineItems] = useState(calendarData?.lineItems ? calendarData?.lineItems : []);
   const [materialArray, setMaterialArray] = useState(
     calendarData?.lineItem?.seriveces ? calendarData?.lineItem?.seriveces : [],
   );
-  const [pieceName, setPieceName] = useState('');
+  const [itemName, setItemName] = useState('');
   const [discount, setDiscount] = useState(
     calendarData?.lineItem?.discount?.discount ? calendarData?.lineItem?.discount?.discount : 0,
   );
   const [percentageDiscount, setPercentageDiscount] = useState(0);
   const [description, setDescription] = useState('');
-  const [piecePrice, setPiecePrice] = useState('');
+  const [itemPrice, setItemPrice] = useState('');
   const [totalUnits, settotalUnits] = useState(1);
   const [showDiscountAccordian, setShowDiscountAccordian] = useState(false);
   const [drive, setDrive] = useState({ drive: true, onTheWay: false, arrived: false });
   const [start, setStart] = useState({ start: true, inProgress: false, finish: false });
   const [showAccordian, setshowAccordian] = useState(false);
 
-  const [combinedStartTime, setCombinedStartTime] = useState(calendarData?.start);
-  const [combinedEndTime, setCombinedEndTime] = useState(calendarData?.end);
+  const [displayStartTime, setDisplayStartTime] = useState(new Date(calendarData?.start.seconds * 1000));
+  const [displayEndTime, setDisplayEndTime] = useState(new Date(calendarData?.end.seconds * 1000));
+  const [combinedStartTime, setCombinedStartTime] = useState(new Date(calendarData?.start.seconds * 1000));
+  const [combinedEndTime, setCombinedEndTime] = useState(new Date(calendarData?.end.seconds * 1000));
 
+  const [selectUser, setSelectUser] = useState(calendarData.dispatchedTo);
+  const [showDispatchModal, setShowDispatchModal] = useState(false);
+  const [displayedUsers, setDisplayedUsers] = useState(calendarData.dispatchedTo);
+
+  // useEffect(() => {
+  //   setSelectUser(calendarData.dispatchedTo);
+  // }, [calendarData.dispatchedTo]);
   // useEffect to set drive to the correct state
   useEffect(() => {
     if (!calendarData?.startDrivingTime && !calendarData?.endDrivingTime) {
@@ -102,20 +127,24 @@ const JobDetailsPresenter = ({
   const onPressPlus = () => {
     settotalUnits(old => old + 1);
   };
-  const onSave = () => {
-    const newItem = { pieceName, description, piecePrice, totalUnits };
-    setArr(prevArr => [...prevArr, newItem]);
+  const onSave = async () => {
+    const newItem = { name: itemName, description, unitPrice: itemPrice, quantity: totalUnits };
+    await updateDoc(doc(db, 'businesses', userData.userData.businessId, 'jobs', calendarData?.jobId), {
+      lineItems: [...lineItems, newItem],
+    });
+    setLineItems(prevArr => [...prevArr, newItem]);
     setShowModal({ service: false, materials: false, addDiscount: false, leaveScreen: false });
     settotalUnits(1);
   };
+
   const onSaveMaterials = () => {
     const newItem = { pieceName, description, piecePrice, totalUnits };
     setMaterialArray(prevArr => [...prevArr, newItem]);
     setShowModal({ service: false, materials: false, addDiscount: false, leaveScreen: false });
     settotalUnits(1);
   };
-  const totalItemsPrice = arr?.reduce((total, item) => {
-    const itemPrice = item.piecePrice * item.totalUnits;
+  const totalItemsPrice = lineItems?.reduce((total, item) => {
+    const itemPrice = parseFloat(item.unitPrice) * parseFloat(item.quantity);
     return total + itemPrice;
   }, 0);
 
@@ -137,7 +166,7 @@ const JobDetailsPresenter = ({
   }
   const onPress = () => {
     let arr = [...keywordArr];
-    arr.unshift({ _id: keyword.length, keywordText: keyword });
+    lineItems.unshift({ _id: keyword.length, keywordText: keyword });
     setKeywordArr(arr);
     setKeyword('');
   };
@@ -150,43 +179,46 @@ const JobDetailsPresenter = ({
     setDiscount(discount);
     setShowModal({ service: false, materials: false, addDiscount: false, leaveScreen: false });
   };
-  const onPressDelete = index => {
-    let array = [...arr];
+  const onPressDelete = async index => {
+    let array = [...lineItems];
     array.splice(index, 1);
-    setArr([...array]);
+    setLineItems([...array]);
+    await updateDoc(doc(db, 'businesses', userData.userData.businessId, 'jobs', calendarData?.jobId), {
+      lineItems: [...array],
+    });
   };
-  const onPressDeleteMaterials = index => {
-    let array = [...materialArray];
-    array.splice(index, 1);
-    setMaterialArray([...array]);
-  };
-  const onPressDiscountDelete = () => {
-    setShowDiscountAccordian(false);
-    setDiscount(0);
-    setPercentageDiscount(0);
-  };
+  // const onPressDeleteMaterials = index => {
+  //   let array = [...materialArray];
+  //   array.splice(index, 1);
+  //   setMaterialArray([...array]);
+  // };
+  // const onPressDiscountDelete = () => {
+  //   setShowDiscountAccordian(false);
+  //   setDiscount(0);
+  //   setPercentageDiscount(0);
+  // };
 
   //Start date and time formatted
-  const date = new Date(calendarData?.start);
-  const day = date.getDate().toString().padStart(2, '0');
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const year = date.getFullYear();
-  const hours = date.getHours();
-  const minutes = date.getMinutes().toString().padStart(2, '0');
-  const ampm = hours >= 12 ? 'PM' : 'AM';
-  const formattedStartDate = `${day}/${month}/${year}`;
-  const formattedStartTime = `${hours % 12}:${minutes} ${ampm}`;
+  // const date = new Date(combinedStartTime);
+  // const day = date.getDate().toString().padStart(2, '0');
+  // const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  // const year = date.getFullYear();
+  // const hours = date.getHours();
+  // const minutes = date.getMinutes().toString().padStart(2, '0');
+  // const ampm = hours >= 12 ? 'PM' : 'AM';
+  // const formattedStartDate = `${day}/${month}/${year}`;
+  // const formattedStartTime = `${hours % 12}:${minutes} ${ampm}`;
 
-  //end date and time formatted
-  const endDate = new Date(calendarData?.end);
-  const endDay = endDate.getDate().toString().padStart(2, '0');
-  const endMonth = (endDate.getMonth() + 1).toString().padStart(2, '0');
-  const endYear = endDate.getFullYear();
-  const endHour = endDate.getHours();
-  const endMinutes = endDate.getMinutes().toString().padStart(2, '0');
-  const endampm = endHour >= 12 ? 'PM' : 'AM';
-  const formattedEndDate = `${endDay}/${endMonth}/${endYear}`;
-  const formattedEndTime = `${endHour % 12}:${endMinutes} ${endampm}`;
+  // //end date and time formatted
+  // const endDate = new Date(combinedEndTime);
+  // const endDay = endDate.getDate().toString().padStart(2, '0');
+  // const endMonth = (endDate.getMonth() + 1).toString().padStart(2, '0');
+  // const endYear = endDate.getFullYear();
+  // const endHour = endDate.getHours();
+  // const endMinutes = endDate.getMinutes().toString().padStart(2, '0');
+  // const endampm = endHour >= 12 ? 'PM' : 'AM';
+  // const formattedEndDate = `${endDay}/${endMonth}/${endYear}`;
+  // const formattedEndTime = `${endHour % 12}:${endMinutes} ${endampm}`;
 
   //start drive
 
@@ -230,6 +262,9 @@ const JobDetailsPresenter = ({
     getEmployees();
   }, []);
 
+  //usernames for dropdown
+  let usersNames = employeeList?.length > 0 && employeeList?.map(item => item.firstName + ' ' + item.lastName);
+
   const handleCopyAddress = async () => {
     await Clipboard.setStringAsync(calendarData?.customer?.address[0]);
     alert('Address copied to clipboard');
@@ -240,6 +275,50 @@ const JobDetailsPresenter = ({
     alert('Phone number copied to clipboard');
   };
 
+  const handleChangeDate = async () => {
+    // Convert the date strings to Date objects
+    const combinedStartDate = new Date(combinedStartTime);
+    const combinedEndDate = new Date(combinedEndTime);
+    const displayStartDate = new Date(displayStartTime);
+    const displayEndDate = new Date(displayEndTime);
+
+    // Compare the timestamps
+    if (
+      combinedStartDate.getTime() === displayStartDate.getTime() &&
+      combinedEndDate.getTime() === displayEndDate.getTime()
+    ) {
+      console.log('no changes');
+      setShowSchedule(false);
+      return;
+    }
+    console.log('were updating firestore');
+    // update firestore
+    await updateDoc(doc(db, 'businesses', userData.userData.businessId, 'jobs', calendarData?.jobId), {
+      start: combinedStartTime,
+      end: combinedEndTime,
+    });
+    setDisplayEndTime(combinedEndTime);
+    setDisplayStartTime(combinedStartTime);
+
+    setShowSchedule(false);
+  };
+
+  const [showSchedule, setShowSchedule] = useState(false);
+
+  const handleSaveDispatch = async () => {
+    if (selectUser !== displayedUsers) {
+      const updatedDispatchedTo = selectUser.map(user => {
+        const { _index, ...rest } = user;
+        return rest;
+      });
+      await updateDoc(doc(db, 'businesses', userData.userData.businessId, 'jobs', calendarData?.jobId), {
+        dispatchedTo: updatedDispatchedTo,
+      });
+      console.log('updated firestore');
+      setDisplayedUsers(selectUser);
+    }
+    setShowDispatchModal(false);
+  };
   return (
     <View
       style={{
@@ -341,14 +420,14 @@ const JobDetailsPresenter = ({
         </View>
         <View style={styles.ListItemView}>
           <View style={styles.contactInfoHeaderView}>
-            <Text style={styles.contactInfoHeader}>Services</Text>
-            <Text style={styles.contactInfoHeader}>$ {totalPrice}</Text>
+            <Text style={styles.contactInfoHeader}>Line Items</Text>
+            <Text style={styles.contactInfoHeader}>${totalPrice.toFixed(2)}</Text>
           </View>
           <Accordian
-            showAccordian={showAccordian}
+            showAccordian={lineItems?.length > 0}
             onPressShowAccordian={() => setshowAccordian(!showAccordian)}
             onPressDelete={index => onPressDelete(index)}
-            data={arr}
+            data={lineItems}
             header="Services"
             onPress={() => setShowModal({ service: true, materials: false })}
           />
@@ -412,15 +491,104 @@ const JobDetailsPresenter = ({
             )}
           </View> */}
         </View>
-        <Schedule
-          defaultStartDate={formattedStartDate !== `NaN/NaN/NaN` ? formattedStartDate : moment().format('MM/DD/YYYY')}
-          defaultStartTime={formattedStartTime !== 'NaN:NaN AM' ? formattedStartTime : moment().format('hh:mm A')}
-          defaultEndDate={formattedEndDate !== `NaN/NaN/NaN` ? formattedEndDate : moment().format('MM/DD/YYYY')}
-          defaultEndTime={formattedEndTime !== 'NaN:NaN AM' ? formattedEndTime : moment().format('hh:mm A')}
-          setCombinedEndTime={setCombinedEndTime}
-          setCombinedStartTime={setCombinedStartTime}
-        />
-        <DispatchInvoices data={calendarData?.dispatchedTo} />
+        <ShowSchedule setShowSchedule={setShowSchedule} start={displayStartTime} end={displayEndTime} />
+        <Modal visible={showSchedule} transparent={true} animation="slide">
+          <TouchableWithoutFeedback onPress={() => setShowSchedule(false)}>
+            <View
+              style={{
+                flex: 1,
+                backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                alignItems: 'center',
+              }}>
+              <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <View
+                  style={{
+                    width: '90%',
+                    marginTop: '40%',
+                    position: 'relative',
+                  }}>
+                  <Pressable style={{ position: 'absolute', right: 10, top: 14, zIndex: 1 }} onPress={handleChangeDate}>
+                    <Image
+                      style={{
+                        width: spacing.SCALE_30,
+                        height: spacing.SCALE_30,
+                      }}
+                      source={confirmIcon}
+                    />
+                  </Pressable>
+                  <View style={styles.modalHeader}>
+                    <Schedule
+                      defaultStartTime={moment(displayStartTime).format('hh:mm A')}
+                      defaultEndTime={
+                        combinedEndTime
+                          ? moment(displayEndTime).format('hh:mm A')
+                          : moment().hours(11).minutes(0).format('hh:mm A')
+                      }
+                      defaultStartDate={
+                        combinedStartTime
+                          ? moment(displayStartTime).format('MM/DD/YYYY')
+                          : moment().format('MM/DD/YYYY')
+                      }
+                      defaultEndDate={
+                        combinedEndTime ? moment(displayEndTime).format('MM/DD/YYYY') : moment().format('MM/DD/YYYY')
+                      }
+                      // defaultStartDate={
+                      //   formattedStartDate !== `NaN/NaN/NaN` ? formattedStartDate : moment().format('MM/DD/YYYY')
+                      // }
+                      // defaultStartTime={
+                      //   formattedStartTime !== 'NaN:NaN AM' ? formattedStartTime : moment().format('hh:mm A')
+                      // }
+                      // defaultEndDate={
+                      //   formattedEndDate !== `NaN/NaN/NaN` ? formattedEndDate : moment().format('MM/DD/YYYY')
+                      // }
+                      // defaultEndTime={formattedEndTime !== 'NaN:NaN AM' ? formattedEndTime : moment().format('hh:mm A')}
+                      setCombinedEndTime={setCombinedEndTime}
+                      setCombinedStartTime={setCombinedStartTime}
+                      setShowSchedule={setShowSchedule}
+                    />
+                  </View>
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
+        <DispatchInvoices data={displayedUsers} setModal={setShowDispatchModal} />
+
+        <Modal visible={showDispatchModal} transparent={true} animation="slide">
+          <TouchableWithoutFeedback onPress={() => setShowDispatchModal(false)}>
+            <View
+              style={{
+                flex: 1,
+                backgroundColor: 'rgba(0, 0, 0, 0.7)',
+              }}>
+              <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <View
+                  style={{
+                    width: '90%',
+                    marginTop: '40%',
+                    marginLeft: '5%',
+                    position: 'relative',
+                    height: '20%',
+                  }}>
+                  <Pressable
+                    style={{ position: 'absolute', right: 10, top: 35, zIndex: 1 }}
+                    onPress={handleSaveDispatch}>
+                    <Image
+                      style={{
+                        width: spacing.SCALE_30,
+                        height: spacing.SCALE_30,
+                      }}
+                      source={saveIcon}
+                    />
+                  </Pressable>
+
+                  <DispatchModal data={users} setSelectUser={setSelectUser} selectUser={selectUser} />
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
+
         <JobTags
           data={keywordArr}
           onPress={onPress}
@@ -428,7 +596,7 @@ const JobDetailsPresenter = ({
           onRemove={index => onRemove(index)}
           value={keyword}
         />
-        <JobSource data={employeeList} leadSource={calendarData?.leadSource} />
+        <JobSource data={usersNames} leadSource={calendarData?.leadSource} />
         {/* <Attachments /> */}
         <Notes />
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginVertical: spacing.SCALE_40 }}>
@@ -458,41 +626,41 @@ const JobDetailsPresenter = ({
           </BigButton>
         </View>
       </ScrollView>
-      <AddDiscountModal
+      {/* <AddDiscountModal
         onChangePercentagePrice={text => setPercentageDiscount(text)}
         onPress={onSaveDiscount}
         onChangePrice={text => setDiscount(text)}
         onPressCancel={() => setShowModal({ addDiscount: false, leaveScreen: false, service: false, materials: false })}
         visible={showModal.addDiscount}
-      />
+      /> */}
       <ServicesModal
-        onChangePieceName={text => setPieceName(text)}
+        onChangeItemName={text => setItemName(text)}
         onChangeDescription={text => setDescription(text)}
-        onChangePiecePrice={text => setPiecePrice(text)}
+        onChangeItemPrice={text => setItemPrice(text)}
         onChangeTotalUnits={text => settotalUnits(text)}
         onSave={onSave}
         onPressPlus={onPressPlus}
-        modalTotalPrice={totalUnits * piecePrice}
+        modalTotalPrice={totalUnits * itemPrice}
         onPressMinus={onPressMinus}
         totalUnitsValue={totalUnits.toString()}
         modalHeader="Add Services"
         onPressCancel={() => setShowModal({ addDiscount: false, leaveScreen: false, service: false, materials: false })}
         visible={showModal.service}
       />
-      <ServicesModal
+      {/* <ServicesModal
         onChangePieceName={text => setPieceName(text)}
         onChangeDescription={text => setDescription(text)}
-        onChangePiecePrice={text => setPiecePrice(text)}
+        onChangeItemPrice={text => setItemPrice(text)}
         onChangeTotalUnits={text => settotalUnits(text)}
         onSave={onSaveMaterials}
         onPressPlus={onPressPlus}
-        modalTotalPrice={totalUnits * piecePrice}
+        modalTotalPrice={totalUnits * itemPrice}
         onPressMinus={onPressMinus}
         totalUnitsValue={totalUnits.toString()}
         modalHeader="Add Materials"
         onPressCancel={() => setShowModal({ addDiscount: false, leaveScreen: false, service: false, materials: false })}
         visible={showModal.materials}
-      />
+      /> */}
     </View>
   );
 };

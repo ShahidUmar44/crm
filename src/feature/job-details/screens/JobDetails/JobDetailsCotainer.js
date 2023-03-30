@@ -1,10 +1,11 @@
-import React, { useContext } from 'react';
-import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import React, { useContext, useState, useCallback } from 'react';
+import { doc, serverTimestamp, updateDoc, collection, query, getDocs, where } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { jobDetails } from '../../../../example_docs';
 import { UserContext } from '../../../../context/UserContext';
 import moment from 'moment';
 import { sendMessage } from '../../../../utils/twilio';
+import { useFocusEffect } from '@react-navigation/native';
 
 import { db } from '../../../../utils/Firebase';
 import JobDetailsPresenter from './JobDetailsPresenter';
@@ -137,6 +138,27 @@ const JobDetailsCotainer = ({ route }) => {
     }
   }
 
+  const [users, setUsers] = useState([]);
+  const getAllUsers = async () => {
+    let businessId = userData?.userData.businessId;
+    let usersRef = collection(db, 'users');
+    const allEmployees = query(usersRef, where('businessId', '==', businessId));
+
+    let docSnap = await getDocs(allEmployees);
+    const docArray = docSnap.docs.map(doc => doc.data());
+    setUsers(docArray);
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      getAllUsers();
+
+      return () => {
+        setUsers([]);
+      };
+    }, []),
+  );
+
   return (
     <JobDetailsPresenter
       calendarData={calendarData}
@@ -145,6 +167,7 @@ const JobDetailsCotainer = ({ route }) => {
       handleStartTime={handleStartTime}
       handleEndTime={handleEndTime}
       sendReview={sendReview}
+      users={users}
     />
   );
 };

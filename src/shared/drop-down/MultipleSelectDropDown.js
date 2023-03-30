@@ -9,15 +9,22 @@ import friendsIcon from '../../../assets/images/friendsIcon.png';
 import deleteIcon from '../../../assets/images/deleteIcon.png';
 import { useFocusEffect } from '@react-navigation/native';
 
-const MultipleSelectDropDown = ({ data, setSelectUser }) => {
-  const [selected, setSelected] = React.useState([]);
-  useFocusEffect(
-    React.useCallback(() => {
-      setSelected([]);
-    }, []),
-  );
+const MultipleSelectDropDown = ({ data, setSelectUser, selectUser }) => {
+  const [selected, setSelected] = React.useState(selectUser ? selectUser.map(user => user.id) : []);
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     setSelected([]);
+  //   }, []),
+  // );
 
   useEffect(() => {
+    if (selected.length === 0 && selectUser && selectUser.length > 0) {
+      setSelected(selectUser.map(user => user.id));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (data?.length === 0) return;
     const filteredData = data?.filter(item => selected.includes(item.id));
     setSelectUser(filteredData);
   }, [selected]);
@@ -75,7 +82,6 @@ const MultipleSelectDropDown = ({ data, setSelectUser }) => {
 const styles = StyleSheet.create({
   container: {
     paddingTop: spacing.SCALE_10,
-    flex: 1,
   },
   dropdown: {
     height: spacing.SCALE_50,

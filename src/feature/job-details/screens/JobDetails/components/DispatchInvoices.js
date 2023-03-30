@@ -1,31 +1,43 @@
 import React from 'react';
-import { View, StyleSheet, Text, Image } from 'react-native';
+import { View, StyleSheet, Text, Image, Pressable } from 'react-native';
 
 import { colors, spacing, typography } from '../../../../../theme';
+import * as Clipboard from 'expo-clipboard';
 
 import friendsIcon from '../../../../../../assets/images/friendsIcon.png';
+import personIcon from '../../../../../../assets/images/personIcon.png';
+import userIcon from '../../../../../../assets/images/user.png';
+import editIcon from '../../../../../../assets/images/edit-light.png';
 
-const DispatchInvoices = ({ data }) => {
+const DispatchInvoices = ({ data, setModal }) => {
+  const handleCopyPhone = async phone => {
+    await Clipboard.setStringAsync(phone);
+    alert('Phone number copied to clipboard');
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.dipatchView}>
         <View style={styles.dispatchHeaderView}>
-          <Text style={styles.header}>Dispatch to</Text>
+          <Text style={styles.header}>Dispatched to</Text>
+          <Pressable onPress={() => setModal(true)}>
+            <Image style={styles.editIcon} source={editIcon} />
+          </Pressable>
         </View>
         <View style={styles.dispatchCard}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Image style={styles.icon} source={friendsIcon} />
-            <Text>My Employee</Text>
-          </View>
           {data?.length > 0 &&
-            data.map(item => {
+            data.map((item, key) => {
               return (
-                <View style={styles.employeeCard}>
+                <View style={styles.employeeCard} key={key}>
+                  <Image style={styles.icon} source={userIcon} />
                   <View>
-                    <Text>{`${item.firstName} ${item.lastName}`}</Text>
-                    <Text>{item.email}</Text>
+                    <Text
+                      style={{
+                        ...styles.text,
+                        marginRight: spacing.SCALE_10,
+                      }}>{`${item.firstName} ${item.lastName}`}</Text>
                   </View>
-                  <Text>
+                  <Text style={styles.text} onLongPress={() => handleCopyPhone(item.phone)}>
                     {'(' +
                       item?.phone.substring(2, 5) +
                       ') ' +
@@ -61,6 +73,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: spacing.SCALE_4,
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     paddingRight: spacing.SCALE_10,
   },
   header: {
@@ -68,6 +81,9 @@ const styles = StyleSheet.create({
     color: colors.whiteBackground,
     paddingLeft: spacing.SCALE_10,
     paddingVertical: spacing.SCALE_10,
+  },
+  text: {
+    fontSize: typography.FONT_SIZE_16,
   },
   dispatchCard: {
     backgroundColor: colors.whiteBackground,
@@ -77,18 +93,21 @@ const styles = StyleSheet.create({
     borderRadius: spacing.SCALE_6,
   },
   icon: {
-    height: spacing.SCALE_30,
-    width: spacing.SCALE_30,
+    height: spacing.SCALE_20,
+    width: spacing.SCALE_20,
     marginRight: spacing.SCALE_10,
+  },
+  editIcon: {
+    height: spacing.SCALE_20,
+    width: spacing.SCALE_20,
+    marginRight: 0,
   },
   employeeCard: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    marginTop: spacing.SCALE_10,
-    borderTopWidth: 1,
-    borderColor: colors.primary,
-    paddingVertical: spacing.SCALE_6,
+    justifyContent: 'flex-star',
+
+    paddingVertical: spacing.SCALE_10,
   },
 });
 export default DispatchInvoices;
