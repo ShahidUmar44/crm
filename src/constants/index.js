@@ -10,13 +10,13 @@ export const SCREENS = {
   FORGET_PASSWORD: 'ForgetPassword',
   SET_NEW_PASSWORD: 'SetNewPassword',
 
-  HOME: 'Home',
-  HOMENAVIGATOR: 'HomeNavigator',
+  HOME: 'Home1', // not sure what this is
+  HOMENAVIGATOR: 'Home',
   HOMESCREEN: 'HomeScreen',
-  CHAT: 'Chat',
-  CHATNAVIGATOR: 'ChatNavigator',
+  CHAT: 'ChatScreen',
+  CHATNAVIGATOR: 'Messages',
   CHAT_INBOX_LIST: 'ChatInboxList',
-  SCHEDULE: 'Schedule',
+  SCHEDULE: 'Schedule', // this seems to be the main navigator
   SCHEDULESCREEN: 'ScheduleScreen',
   CUSTOMER: 'Customer',
   CUSTOMERS_LIST: 'CustomersList',
@@ -29,7 +29,7 @@ export const SCREENS = {
   INVOICE: 'Invoice',
   INVOICE_SCREEN: 'InvoiceScreen',
   ADD_INVOICE: 'AddInvoice',
-  CUSTOMER: 'Customer',
+  CUSTOMER: 'Customers', // this seems to be the main navigator
   NEW_CUSTOMER_SCREEN_FROM_JOB: 'NewCustomerScreenFromJob',
   ADD_EDIT_CUSTOMER_PERSONAL_INFO: 'AddEditCustomerPersonalInfo',
   ADD_EDIT_CUSTOMER_PERSONAL_ADDRESS: 'AddEditCustomerPersonalAddress',
@@ -40,6 +40,8 @@ export const SCREENS = {
   PAYMENT: 'Payment',
   CHECKOUT: 'Checkout',
   CHECKOUTSCREEN: 'CheckoutScreen',
+  PAYMENTSCREEN: 'PaymentScreen',
+  SUCCESSPAYMENT: 'SuccessPayment',
 };
 
 //local

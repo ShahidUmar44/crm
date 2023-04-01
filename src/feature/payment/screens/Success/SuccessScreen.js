@@ -1,6 +1,7 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import React from 'react';
 import { useNavigation } from '@react-navigation/native';
+import { SCREENS } from '../../../../constants';
 
 export default function SuccessScreen({ route }) {
   const jobDetails = route?.params?.jobDetails;
@@ -9,8 +10,8 @@ export default function SuccessScreen({ route }) {
 
   const navigateBackToJobDetails = () => {
     console.log('jobDetails', jobDetails);
-    navigation.navigate('Schedule', {
-      screen: 'JobDetails',
+    navigation.navigate(SCREENS.SCHEDULE, {
+      screen: SCREENS.JOBDETAILS,
       params: {
         calendarData: jobDetails,
       },

@@ -14,11 +14,8 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.SCALE_20,
     paddingRight: spacing.SCALE_20,
   },
-  button: {
+  icon: {
     backgroundColor: 'white',
-    borderRadius: spacing.SCALE_50,
-    height: spacing.SCALE_70,
-    width: spacing.SCALE_70,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
@@ -29,10 +26,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
-  },
-  icon: {
-    position: 'absolute',
-    zIndex: 1,
   },
   listContainer: {
     position: 'absolute',
@@ -90,14 +83,16 @@ const HomeScreenPresenter = () => {
           name="add-circle-outline"
           size={50}
           color={colors.primary}
-          style={[
-            styles.icon,
-            {
-              transform: [
-                { rotate: iconAnimation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '45deg'] }) },
-              ],
-            },
-          ]}
+          style={{
+            transform: [
+              {
+                rotate: iconAnimation.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: ['0deg', '45deg'],
+                }),
+              },
+            ],
+          }}
         />
       </TouchableOpacity>
     </View>

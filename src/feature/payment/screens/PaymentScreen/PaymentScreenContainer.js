@@ -13,6 +13,7 @@ import { UserContext } from '../../../../context/UserContext';
 import SmallButton from '../../../../shared/buttons/SmallButton';
 import HomebaseAlert, { useAlertControl } from '../../../../shared/common/HomebaseAlert';
 export const node = 'https://us-central1-homebase-90.cloudfunctions.net';
+import { SCREENS } from '../../../../constants';
 
 const PaymentScreenContainer = ({ route }) => {
   const { userData } = useContext(UserContext);
@@ -134,10 +135,10 @@ const PaymentScreenContainer = ({ route }) => {
       alert(`Error code: ${error.code}`, error.message);
     } else if (paymentIntent) {
       console.log('Success from promise', JSON.stringify(paymentIntent, null, 2));
-      navigation.navigate('SuccessPayment', { jobDetails });
+      navigation.navigate(SCREENS.SUCCESSPAYMENT, { jobDetails });
       setTimeout(() => {
         paymentAlert.close();
-      }, 1000);
+      }, 500);
     }
 
     // const jobRef = doc(db, 'businesses', businessId, 'jobs', jobId);

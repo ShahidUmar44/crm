@@ -76,7 +76,7 @@ const ScheduleScreenPresenter = ({ responseData, loading }) => {
         onLongPressBackground={date => console.log('long press background', date)}
         start={4}
         end={24}
-        hourFormat="HH:mm"
+        hourFormat="hh:mm A"
         onPressEvent={onSelected}
         theme={{
           unavailableBackgroundColor: 'transparent',
