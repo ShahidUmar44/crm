@@ -4,81 +4,25 @@ import { View, Text, StyleSheet, Pressable, Image } from 'react-native';
 import Input from '../../../../../shared/form/Input';
 import { colors, spacing, typography } from '../../../../../theme';
 
-import editPencil from '../../../../../../assets/images/editPencil.png';
-import deleteIcon from '../../../../../../assets/images/deleteIcon.png';
-import BigButton from '../../../../../shared/buttons/BigButton';
+import editIcon from '../../../../../../assets/images/edit-light.png';
 
-const Notes = () => {
-  const [notesArr, setNotesArr] = useState([]);
-  const [title, setTitle] = useState('');
-  const [descripton, setDescripton] = useState('');
-  const [indexToEdit, setIndexToEdit] = useState(null);
-  const handleAdd = () => {
-    if (!indexToEdit) {
-      let arr = [...notesArr];
-      arr.unshift({ id: notesArr.length, title: title, description: descripton });
-      setNotesArr(arr);
-      setDescripton('');
-      setTitle('');
-    } else {
-      notesArr[indexToEdit] = { id: notesArr.length, title: title, description: descripton };
-      setNotesArr(notesArr);
-      setDescripton('');
-      setTitle('');
-    }
-  };
-
-  const handleDelete = index => {
-    let arr = [...notesArr];
-    arr.splice(index, 1);
-    setNotesArr(arr);
-  };
-  const handleEdit = item => {
-    setDescripton(item.description);
-    setTitle(item.title);
-  };
-
+const Notes = ({ notes, setModal }) => {
   return (
     <View style={styles.container}>
       <View style={styles.jobSourceView}>
         <View style={styles.headerView}>
           <Text style={styles.header}>Private Notes</Text>
+          <Pressable onPress={() => setModal(true)}>
+            <Image style={styles.editIcon} source={editIcon} />
+          </Pressable>
         </View>
-        <View style={{ marginHorizontal: '5%' }}>
-          <Input
-            backgroundColor={colors.whiteBackground}
-            onChangeText={setDescripton}
-            value={descripton}
-            placeholder="Desription..."
-          />
-          <View style={{ alignItems: 'flex-end', marginTop: spacing.SCALE_10 }}>
-            <BigButton width={spacing.SCALE_106} height={spacing.SCALE_40} onPress={handleAdd}>
-              <Text style={{ color: colors.text }}>{indexToEdit ? 'Save' : 'Add'}</Text>
-            </BigButton>
+        <View style={styles.dispatchCard}>
+          <View>
+            <Text style={[{ fontSize: typography.FONT_SIZE_16 }, !notes && { color: '#9ca3af' }]}>
+              {notes ? notes : 'Notes...'}
+            </Text>
           </View>
         </View>
-        {notesArr?.map((item, index) => {
-          return (
-            <View style={styles.noteBox} key={index}>
-              <View style={styles.noteHeaderView}>
-                <Text style={styles.noteHeading}>{item.title}</Text>
-                <View style={{ flexDirection: 'row' }}>
-                  <Pressable
-                    onPress={() => {
-                      setIndexToEdit(index);
-                      handleEdit(item, index);
-                    }}>
-                    <Image style={styles.icon} resizeMode="contain" source={editPencil} />
-                  </Pressable>
-                  <Pressable onPress={() => handleDelete(index)}>
-                    <Image style={styles.icon} resizeMode="contain" source={deleteIcon} />
-                  </Pressable>
-                </View>
-              </View>
-              <Text>{item.description}</Text>
-            </View>
-          );
-        })}
       </View>
     </View>
   );
@@ -102,6 +46,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: spacing.SCALE_4,
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     paddingRight: spacing.SCALE_10,
   },
   header: {
@@ -132,6 +77,20 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     marginBottom: spacing.SCALE_10,
+  },
+  dispatchCard: {
+    backgroundColor: colors.whiteBackground,
+    marginHorizontal: spacing.SCALE_20,
+    padding: spacing.SCALE_10,
+    paddingVertical: spacing.SCALE_20,
+    marginTop: spacing.SCALE_20,
+    borderRadius: spacing.SCALE_6,
+    marginBottom: spacing.SCALE_20,
+  },
+  editIcon: {
+    height: spacing.SCALE_20,
+    width: spacing.SCALE_20,
+    marginRight: 0,
   },
 });
 export default Notes;

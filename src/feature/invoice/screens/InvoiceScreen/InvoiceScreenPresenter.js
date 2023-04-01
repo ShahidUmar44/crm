@@ -1,9 +1,10 @@
-import React, { useContext } from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import React, { useContext, useState, useEffect, useRef } from 'react';
+import { StyleSheet, View, Text, Image, Animated, Easing } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { collection, doc, setDoc, updateDoc, serverTimestamp, increment } from 'firebase/firestore';
 import { db } from '../../../../utils/Firebase';
 import { node } from '../../../../constants/index';
+import moment from 'moment';
 
 import { SCREENS } from '../../../../constants';
 import BigButton from '../../../../shared/buttons/BigButton';
@@ -11,71 +12,99 @@ import { colors, spacing, typography } from '../../../../theme';
 import { UserContext } from '../../../../context/UserContext';
 import GoBackButton from '../../../../shared/buttons/GoBackButton';
 
-const InvoiceScreenPresenter = ({ lineItem, clientName }) => {
+import loadingIcon from '../../../../../assets/images/loading.png';
+import checkedGreen from '../../../../../assets/images/checkedGreen.png';
+
+const InvoiceScreenPresenter = ({ jobDetails }) => {
   const { userData } = useContext(UserContext);
   const navigation = useNavigation();
 
-  const jobDetails = {
-    businessId: 'xsUrbqrcTQSyFjJOtpEZyC0BUUK2',
-    customer: {
-      address: ['4625 35th Street, San Diego, CA 92116'],
-      businessId: 'xsUrbqrcTQSyFjJOtpEZyC0BUUK2',
-      customerId: '71Nwq7pLEYHJuLyeKO5G',
-      dateAdded: '2023-03-11T16:31:20-08:00',
-      displayName: 'Derick DeCesare',
-      email: ['deerriicckk@gmail.com'],
-      firstName: 'Derick',
-      lastJob: '2023-03-22T12:02:23-07:00',
-      lastName: 'DeCesare',
-      lastUpdated: '2023-03-11T16:31:20-08:00',
-      notes: 'This is the reincarnated derick',
-      notifications: true,
-      phone: {
-        additional: '',
-        home: '',
-        mobile: '+13038286690',
-        work: '',
-      },
-    },
-    dateAdded: '2023-03-22T12:06:56-07:00',
-    dispatchedTo: [
-      {
-        businessId: 'xsUrbqrcTQSyFjJOtpEZyC0BUUK2',
-        createdAt: '2023-03-10T08:49:04-08:00',
-        email: 'derick.decesare@gmail.com',
-        firstName: 'Derick',
-        id: 'xsUrbqrcTQSyFjJOtpEZyC0BUUK2',
-        isAdmin: true,
-        lastName: 'DeCesare',
-        phone: '+13038286690',
-        stripeAccountId: 'acct_1MkddhBSAB04s2b4',
-        userType: 'Admin',
-      },
-    ],
-    end: '2023-03-23T21:00:00-07:00',
-    jobId: 'YkhJMQ1Ixo84soVrbleQ',
-    jobTotal: 199,
-    lastUpdated: '2023-03-22T12:06:56-07:00',
-    leadSource: {
-      online: true,
-    },
-    lineItems: [
-      {
-        description: '',
-        name: 'Window CLeaning',
-        quantity: 1,
-        unitPrice: '199',
-      },
-    ],
-    note: 'Notes!',
-    start: '2023-03-23T19:00:00-07:00',
-    timezone: 'America/Los_Angeles',
-  };
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  const spinValue = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    if (loading) {
+      Animated.loop(
+        Animated.timing(spinValue, {
+          toValue: 1,
+          duration: 1500,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        }),
+      ).start();
+    } else {
+      spinValue.setValue(0);
+    }
+  }, [loading, spinValue]);
+
+  const spin = spinValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
+  // const jobDetails = {
+  //   businessId: 'xsUrbqrcTQSyFjJOtpEZyC0BUUK2',
+  //   customer: {
+  //     address: ['4625 35th Street, San Diego, CA 92116'],
+  //     businessId: 'xsUrbqrcTQSyFjJOtpEZyC0BUUK2',
+  //     customerId: '71Nwq7pLEYHJuLyeKO5G',
+  //     dateAdded: '2023-03-11T16:31:20-08:00',
+  //     displayName: 'Derick DeCesare',
+  //     email: ['deerriicckk@gmail.com'],
+  //     firstName: 'Derick',
+  //     lastJob: '2023-03-22T12:02:23-07:00',
+  //     lastName: 'DeCesare',
+  //     lastUpdated: '2023-03-11T16:31:20-08:00',
+  //     notes: 'This is the reincarnated derick',
+  //     notifications: true,
+  //     phone: {
+  //       additional: '',
+  //       home: '',
+  //       mobile: '+13038286690',
+  //       work: '',
+  //     },
+  //   },
+  //   dateAdded: '2023-03-22T12:06:56-07:00',
+  //   dispatchedTo: [
+  //     {
+  //       businessId: 'xsUrbqrcTQSyFjJOtpEZyC0BUUK2',
+  //       createdAt: '2023-03-10T08:49:04-08:00',
+  //       email: 'derick.decesare@gmail.com',
+  //       firstName: 'Derick',
+  //       id: 'xsUrbqrcTQSyFjJOtpEZyC0BUUK2',
+  //       isAdmin: true,
+  //       lastName: 'DeCesare',
+  //       phone: '+13038286690',
+  //       stripeAccountId: 'acct_1MkddhBSAB04s2b4',
+  //       userType: 'Admin',
+  //     },
+  //   ],
+  //   end: '2023-03-23T21:00:00-07:00',
+  //   jobId: 'YkhJMQ1Ixo84soVrbleQ',
+  //   jobTotal: 199,
+  //   lastUpdated: '2023-03-22T12:06:56-07:00',
+  //   leadSource: {
+  //     online: true,
+  //   },
+  //   lineItems: [
+  //     {
+  //       description: '',
+  //       name: 'Window CLeaning',
+  //       quantity: 1,
+  //       unitPrice: '199',
+  //     },
+  //   ],
+  //   note: 'Notes!',
+  //   start: '2023-03-23T19:00:00-07:00',
+  //   timezone: 'America/Los_Angeles',
+  // };
 
   async function handleSendInvoice() {
     //update firestore document with invoiceSentTime
     console.log('handleSendInvoice');
     console.log('userData', userData);
+    setLoading(true);
     try {
       //create invoice in firestore - this is the situation where the invoice is created for the first time
       if (!jobDetails || !userData || !userData.bizData) return;
@@ -167,6 +196,7 @@ const InvoiceScreenPresenter = ({ lineItem, clientName }) => {
           });
           const responseData = await response.json();
           console.log(responseData);
+          setSuccess(true);
         } catch (error) {
           console.log(error);
         }
@@ -195,27 +225,35 @@ const InvoiceScreenPresenter = ({ lineItem, clientName }) => {
 
       const emailResponseData = await emailResponse.json();
       console.log(emailResponseData);
+      setSuccess(true);
     } catch (error) {
       console.log(error);
     }
+    setLoading(false);
+
+    //navigate back
+    navigation.goBack();
+    setTimeout(() => {
+      setSuccess(false);
+    }, 3000);
   }
 
-  const invoiceObject = lineItem
-    ? {
-        lineItems: [...lineItem?.seriveces, ...lineItem?.materials],
-        totalAmount: lineItem?.totalAmount,
-        discount: lineItem?.discount?.discount,
-      }
-    : {
-        lineItems: [
-          { totalUnits: 1, piecePrice: 199 },
-          { totalUnits: 1, piecePrice: 100 },
-        ],
-        totalAmount: 299,
-        discount: 0,
-      };
+  // const invoiceObject = lineItem
+  //   ? {
+  //       lineItems: [...lineItem?.seriveces, ...lineItem?.materials],
+  //       totalAmount: lineItem?.totalAmount,
+  //       discount: lineItem?.discount?.discount,
+  //     }
+  //   : {
+  //       lineItems: [
+  //         { totalUnits: 1, piecePrice: 199 },
+  //         { totalUnits: 1, piecePrice: 100 },
+  //       ],
+  //       totalAmount: 299,
+  //       discount: 0,
+  //     };
 
-  console.log('🚀 ~ file: InvoiceScreenPresenter.js:14 ~ InvoiceScreenPresenter ~ invoiceObject:', invoiceObject);
+  // console.log('🚀 ~ file: InvoiceScreenPresenter.js:14 ~ InvoiceScreenPresenter ~ invoiceObject:', invoiceObject);
   return (
     <>
       <View style={styles.container}>
@@ -225,21 +263,20 @@ const InvoiceScreenPresenter = ({ lineItem, clientName }) => {
           <View />
         </View>
         <View style={styles.header}>
-          <Text style={styles.title}>INVOICE</Text>
-          <Text style={styles.subtitle}>Invoice #12345</Text>
+          <Text style={styles.title}>Invoice</Text>
         </View>
         <View style={styles.details}>
           <View style={styles.detail}>
             <Text style={styles.detailTitle}>Invoice Date:</Text>
-            <Text style={styles.detailValue}>March 1, 2023</Text>
+            <Text style={styles.detailValue}>{moment(new Date()).format('MMMM DD, YYYY')}</Text>
           </View>
           {/* <View style={styles.detail}>
             <Text style={styles.detailTitle}>Due Date:</Text>
             <Text style={styles.detailValue}>March 31, 2023</Text>
           </View> */}
           <View style={styles.detail}>
-            <Text style={styles.detailTitle}>Client:</Text>
-            <Text style={styles.detailValue}>{clientName}</Text>
+            <Text style={styles.detailTitle}>Customer:</Text>
+            <Text style={styles.detailValue}>{jobDetails?.customer?.displayName}</Text>
           </View>
           {/* <View style={styles.detail}>
             <Text style={styles.detailTitle}>Amount Due:</Text>
@@ -250,33 +287,26 @@ const InvoiceScreenPresenter = ({ lineItem, clientName }) => {
         <View style={styles.items}>
           <View style={styles.itemHeader}>
             <Text style={styles.itemTitle}>Quantity</Text>
-            <Text style={styles.itemTitle}>Price</Text>
+            <Text style={styles.itemTitle}>Unit price</Text>
             <Text style={styles.itemTitle}>Total</Text>
           </View>
-          {invoiceObject?.lineItems &&
-            invoiceObject.lineItems.length > 0 &&
-            invoiceObject?.lineItems?.map((item, key) => {
+          {jobDetails?.lineItems &&
+            jobDetails.lineItems.length > 0 &&
+            jobDetails.lineItems.map((item, key) => {
               return (
                 <View style={styles.item} key={key}>
-                  <Text style={styles.itemQuantity}>{item.totalUnits}</Text>
-                  <Text style={styles.itemPrice}>$ {item.piecePrice}</Text>
-                  <Text style={styles.itemTotal}>${item.totalUnits * item.piecePrice}</Text>
+                  <Text style={styles.itemQuantity}>{item.quantity}</Text>
+                  <Text style={styles.itemPrice}>$ {item.unitPrice}</Text>
+                  <Text style={styles.itemTotal}>${(item.quantity * item.unitPrice).toFixed(2)}</Text>
                 </View>
               );
             })}
         </View>
         <View style={styles.line} />
-        <View style={[styles.total, { marginBottom: spacing.SCALE_0 }]}>
-          <Text style={[styles.totalTitle, { fontSize: typography.FONT_SIZE_16 }]}>Total:</Text>
-          <Text style={[styles.totalValue, { fontSize: typography.FONT_SIZE_16 }]}>$ {invoiceObject?.totalAmount}</Text>
-        </View>
-        <View style={[styles.total, { marginBottom: spacing.SCALE_0 }]}>
-          <Text style={[styles.totalTitle, { fontSize: typography.FONT_SIZE_16 }]}>Discount:</Text>
-          <Text style={[styles.totalValue, { fontSize: typography.FONT_SIZE_16 }]}>- $ {invoiceObject?.discount}</Text>
-        </View>
+
         <View style={styles.total}>
           <Text style={styles.totalTitle}>Total:</Text>
-          <Text style={styles.totalValue}>$ {invoiceObject?.totalAmount - invoiceObject?.discount}</Text>
+          <Text style={styles.totalValue}>${jobDetails?.jobTotal ? jobDetails.jobTotal.toFixed(2) : ''}</Text>
         </View>
         {/* <BigButton
           onPress={() =>
@@ -287,7 +317,26 @@ const InvoiceScreenPresenter = ({ lineItem, clientName }) => {
           <Text style={styles.buttonText}>Next</Text>
         </BigButton> */}
         <BigButton onPress={() => handleSendInvoice()}>
-          <Text style={styles.buttonText}>Send</Text>
+          {success ? (
+            <>
+              <Image source={checkedGreen} style={{ width: 30, height: 30 }} />
+            </>
+          ) : (
+            <>
+              {loading ? (
+                <Animated.Image
+                  source={loadingIcon}
+                  style={{
+                    width: 30,
+                    height: 30,
+                    transform: [{ rotate: spin }],
+                  }}
+                />
+              ) : (
+                <Text style={styles.buttonText}>Send</Text>
+              )}
+            </>
+          )}
         </BigButton>
       </View>
     </>
@@ -397,6 +446,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: colors.text,
     fontSize: typography.FONT_SIZE_18,
+    fontWeight: typography.FONT_WEIGHT_BOLD,
   },
 });
 

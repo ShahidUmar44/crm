@@ -70,6 +70,7 @@ const styles = StyleSheet.create({
   content: {
     borderRadius: 10,
     width: ALERT_WIDTH,
+
     flexDirection: 'column',
     borderColor: colors.transparent,
     backgroundColor: colors.whiteBackground,

@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SCREENS } from '../../constants';
 import CheckoutScreen from './screens/CheckoutScreen';
 import PaymentScreen from './screens/PaymentScreen';
+import SuccessScreen from './screens/Success/SuccessScreen';
 
 const screenOptions = {
   showTabs: true,
@@ -19,6 +20,7 @@ export default function PaymentNavigator() {
     <Stack.Navigator initialRouteName={SCREENS.CHECKOUT} screenOptions={screenOptions}>
       <Stack.Screen name={SCREENS.CHECKOUT} component={CheckoutScreen} />
       <Stack.Screen name={SCREENS.PAYMENT} component={PaymentScreen} />
+      <Stack.Screen name="SuccessPayment" component={SuccessScreen} />
     </Stack.Navigator>
   );
 }

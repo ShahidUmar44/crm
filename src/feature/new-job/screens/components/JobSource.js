@@ -10,16 +10,14 @@ import onlineIcon from '../../../../../assets/images/globe-05.png';
 import friendsIcon from '../../../../../assets/images/friendsIcon.png';
 import userProfileRight from '../../../../../assets/images/user-profile-right.png';
 
-const JobSource = ({ data, leadSource, onSelect, defaultButtonText }) => {
-  const { online, setOnline, referral, setReferral } = useContext(AppContext);
-  useFocusEffect(
-    React.useCallback(() => {
-      if (leadSource) {
-        setOnline(leadSource?.online);
-        setReferral(leadSource?.referral);
-      }
-    }, []),
-  );
+const JobSource = ({ data, leadSource, onSelect, defaultButtonText, online, setOnline, referral, setReferral }) => {
+  // const { online, setOnline, referral, setReferral } = useContext(AppContext);
+  useEffect(() => {
+    if (leadSource) {
+      setOnline(leadSource?.online);
+      setReferral(leadSource?.referral);
+    }
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -65,8 +63,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     marginBottom: spacing.SCALE_10,
-    backgroundColor: colors.shadow,
-    paddingBottom: spacing,
+    paddingBottom: spacing.SCALE_10,
   },
   jobSourceView: {
     borderRadius: spacing.SCALE_4,

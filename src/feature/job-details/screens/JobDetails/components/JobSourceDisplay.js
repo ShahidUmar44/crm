@@ -8,8 +8,10 @@ import friendsIcon from '../../../../../../assets/images/friendsIcon.png';
 import personIcon from '../../../../../../assets/images/personIcon.png';
 import userIcon from '../../../../../../assets/images/user.png';
 import editIcon from '../../../../../../assets/images/edit-light.png';
+import onlineIcon from '../../../../../../assets/images/globe-05.png';
+import userProfileRight from '../../../../../../assets/images/user-profile-right.png';
 
-const DispatchInvoices = ({ data, setModal }) => {
+const JobSourceDisplay = ({ data, setModal }) => {
   const handleCopyPhone = async phone => {
     await Clipboard.setStringAsync(phone);
     alert('Phone number copied to clipboard');
@@ -19,35 +21,57 @@ const DispatchInvoices = ({ data, setModal }) => {
     <View style={styles.container}>
       <View style={styles.dipatchView}>
         <View style={styles.dispatchHeaderView}>
-          <Text style={styles.header}>Dispatched to</Text>
+          <Text style={styles.header}>Job Source</Text>
           <Pressable onPress={() => setModal(true)}>
             <Image style={styles.editIcon} source={editIcon} />
           </Pressable>
         </View>
         <View style={styles.dispatchCard}>
-          {data?.length > 0 &&
-            data.map((item, key) => {
-              return (
-                <View style={styles.employeeCard} key={key}>
-                  <Image style={styles.icon} source={userIcon} />
-                  <View>
-                    <Text
-                      style={{
-                        ...styles.text,
-                        marginRight: spacing.SCALE_10,
-                      }}>{`${item.firstName} ${item.lastName}`}</Text>
-                  </View>
-                  <Text style={styles.text} onLongPress={() => handleCopyPhone(item.phone)}>
-                    {'(' +
-                      item?.phone.substring(2, 5) +
-                      ') ' +
-                      item?.phone.substring(5, 8) +
-                      '-' +
-                      item?.phone.substring(8, 12)}
-                  </Text>
+          {!data.salesPerson && !data.online && !data.referral && (
+            <>
+              <View style={styles.employeeCard}>
+                <Image style={styles.icon} source={userIcon} />
+                <Text style={styles.text}>No Job Source</Text>
+              </View>
+            </>
+          )}
+          {data.salesPerson && (
+            <>
+              <View style={styles.employeeCard}>
+                <Image style={styles.icon} source={userIcon} />
+                <View>
+                  <Text
+                    style={{
+                      ...styles.text,
+                      marginRight: spacing.SCALE_10,
+                    }}>{`${data.salesPerson?.firstName} ${data.salesPerson?.lastName}`}</Text>
                 </View>
-              );
-            })}
+                <Text style={styles.text} onLongPress={() => handleCopyPhone(data.salesPerson?.phone)}>
+                  {'(' +
+                    data.salesPerson?.phone.substring(2, 5) +
+                    ') ' +
+                    data.salesPerson?.phone.substring(5, 8) +
+                    '-' +
+                    data.salesPerson?.phone.substring(8, 12)}
+                </Text>
+              </View>
+            </>
+          )}
+
+          <View>
+            {data.online && (
+              <View style={styles.employeeCard}>
+                <Image style={styles.icon} source={onlineIcon} />
+                <Text style={styles.text}>{data.online ? 'Online' : ''}</Text>
+              </View>
+            )}
+            {data.referral && (
+              <View style={styles.employeeCard}>
+                <Image style={styles.icon} source={friendsIcon} />
+                <Text style={styles.text}>{data.referral ? 'Referral' : ''}</Text>
+              </View>
+            )}
+          </View>
         </View>
       </View>
     </View>
@@ -111,4 +135,4 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.SCALE_10,
   },
 });
-export default DispatchInvoices;
+export default JobSourceDisplay;

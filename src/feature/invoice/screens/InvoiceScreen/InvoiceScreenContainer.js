@@ -1,31 +1,28 @@
-import React from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useNavigation } from '@react-navigation/native';
+import { UserContext } from '../../../../context/UserContext';
+import { db } from '../../../../utils/Firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 import { SCREENS } from '../../../../constants';
 import InvoiceScreenPresenter from './InvoiceScreenPresenter';
 
 const InvoiceScreenContainer = ({ route }) => {
-  const lineItem = route?.params?.lineItem;
-  const clientName = route?.params?.clientName;
+  const jobId = route?.params?.jobId;
   const navigation = useNavigation();
-  console.log('DATA=====', lineItem, clientName);
+  const { userData } = useContext(UserContext);
+  const [jobDetails, setJobDetails] = useState(null);
 
-  const handleAddInvoice = () => {
-    navigation.navigate(SCREENS.ADD_INVOICE);
-  };
+  // we do this to get a completely updated version of the job details
+  useEffect(() => {
+    const getJobDetails = async () => {
+      const jobSnap = await getDoc(doc(db, 'businesses', userData?.userData?.businessId, 'jobs', jobId));
+      setJobDetails(jobSnap.data());
+    };
+    getJobDetails();
+  }, []);
 
-  const handleBack = () => {
-    navigation.navigate(SCREENS.HOME);
-  };
-
-  return (
-    <InvoiceScreenPresenter
-      onBack={handleBack}
-      clientName={clientName}
-      onAddInvoice={handleAddInvoice}
-      lineItem={lineItem}
-    />
-  );
+  return <InvoiceScreenPresenter jobDetails={jobDetails} />;
 };
 
 export default InvoiceScreenContainer;

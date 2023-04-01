@@ -60,12 +60,11 @@ const styles = StyleSheet.create({
   },
   infoBox: {
     backgroundColor: colors.whiteBackground,
-
-    flexDirection: 'column',
-    marginHorizontal: spacing.SCALE_10,
-    marginTop: spacing.SCALE_10,
+    marginHorizontal: spacing.SCALE_20,
     padding: spacing.SCALE_10,
+    marginTop: spacing.SCALE_20,
     borderRadius: spacing.SCALE_6,
+    marginBottom: spacing.SCALE_10,
   },
   infoText: {
     fontSize: typography.FONT_SIZE_16,

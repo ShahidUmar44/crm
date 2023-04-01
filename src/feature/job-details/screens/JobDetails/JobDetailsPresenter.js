@@ -49,6 +49,8 @@ import JobSource from '../../../new-job/screens/components/JobSource';
 import AddDiscountModal from '../../../estimate/components/AddDiscountModal';
 import { UserContext } from '../../../../context/UserContext';
 import DispatchModal from '../../../new-job/screens/components/DispatchModal';
+import JobSourceDisplay from './components/JobSourceDisplay';
+import JobNotes from '../../../../shared/notes/JobNotes';
 
 import playIcon from '../../../../../assets/images/playIcon.png';
 import truckIcon from '../../../../../assets/images/truckIcon.png';
@@ -96,9 +98,26 @@ const JobDetailsPresenter = ({
   const [combinedStartTime, setCombinedStartTime] = useState(new Date(calendarData?.start.seconds * 1000));
   const [combinedEndTime, setCombinedEndTime] = useState(new Date(calendarData?.end.seconds * 1000));
 
-  const [selectUser, setSelectUser] = useState(calendarData.dispatchedTo);
+  const [selectUser, setSelectUser] = useState(calendarData?.dispatchedTo);
   const [showDispatchModal, setShowDispatchModal] = useState(false);
-  const [displayedUsers, setDisplayedUsers] = useState(calendarData.dispatchedTo);
+  const [displayedUsers, setDisplayedUsers] = useState(calendarData?.dispatchedTo);
+
+  const [displayedJobSource, setDisplayedJobSource] = useState(calendarData?.leadSource);
+  const [newSalesPersonIndex, setNewSalesPersonIndex] = useState(null);
+  const [showJobSourceModal, setShowJobSourceModal] = useState(false);
+  const [newOnline, setNewOnline] = useState(null);
+  const [newReferral, setNewReferral] = useState(null);
+
+  const [showNotesModal, setShowNotesModal] = useState(false);
+  const [displayedNotes, setDisplayedNotes] = useState(calendarData?.note ? calendarData?.note : '');
+  const [newNotes, setNewNotes] = useState(calendarData?.note ? calendarData?.note : '');
+
+  useEffect(() => {
+    console.log('newReferral', newReferral);
+    console.log('newOnline', newOnline);
+    console.log('newSalesPersonIndex', newSalesPersonIndex);
+    console.log('newSalesPeron', users[newSalesPersonIndex]);
+  }, [newReferral, newOnline, newSalesPersonIndex]);
 
   // useEffect(() => {
   //   setSelectUser(calendarData.dispatchedTo);
@@ -319,6 +338,40 @@ const JobDetailsPresenter = ({
     }
     setShowDispatchModal(false);
   };
+
+  // handle submit change sales person logic is like this: leadSource: { online, referral, salesPerson: users[newSalespersonIndex] },
+
+  const handleSaveJobSource = async () => {
+    console.log('handlesavejobsource');
+
+    const newSalesPerson = newSalesPersonIndex != null ? users[newSalesPersonIndex] : null;
+    //update firestore with the new jobsource information
+    await updateDoc(doc(db, 'businesses', userData.userData.businessId, 'jobs', calendarData?.jobId), {
+      leadSource: {
+        online: newOnline,
+        referral: newReferral,
+        salesPerson: newSalesPerson,
+      },
+    });
+    // set the displayed job source to match
+    setDisplayedJobSource({
+      online: newOnline,
+      referral: newReferral,
+      salesPerson: newSalesPerson,
+    });
+
+    setShowJobSourceModal(false);
+  };
+
+  const handleSaveNotes = async () => {
+    console.log('handle save notes');
+    await updateDoc(doc(db, 'businesses', userData.userData.businessId, 'jobs', calendarData?.jobId), {
+      note: newNotes,
+    });
+    setDisplayedNotes(newNotes);
+    setShowNotesModal(false);
+  };
+
   return (
     <View
       style={{
@@ -554,7 +607,7 @@ const JobDetailsPresenter = ({
         </Modal>
         <DispatchInvoices data={displayedUsers} setModal={setShowDispatchModal} />
 
-        <Modal visible={showDispatchModal} transparent={true} animation="slide">
+        <Modal visible={showDispatchModal} transparent={true}>
           <TouchableWithoutFeedback onPress={() => setShowDispatchModal(false)}>
             <View
               style={{
@@ -589,23 +642,96 @@ const JobDetailsPresenter = ({
           </TouchableWithoutFeedback>
         </Modal>
 
-        <JobTags
+        {/* <JobTags
           data={keywordArr}
           onPress={onPress}
           onChangeText={text => setKeyword(text)}
           onRemove={index => onRemove(index)}
           value={keyword}
-        />
-        <JobSource data={usersNames} leadSource={calendarData?.leadSource} />
+        /> */}
+        <JobSourceDisplay data={displayedJobSource} setModal={setShowJobSourceModal} />
+        <Modal visible={showJobSourceModal} transparent={true}>
+          <TouchableWithoutFeedback onPress={() => setShowJobSourceModal(false)}>
+            <View
+              style={{
+                flex: 1,
+                backgroundColor: 'rgba(0, 0, 0, 0.7)',
+              }}>
+              <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <View
+                  style={{
+                    width: '90%',
+                    marginTop: '40%',
+                    marginLeft: '5%',
+                    position: 'relative',
+                    height: '20%',
+                  }}>
+                  <Pressable
+                    style={{ position: 'absolute', right: 10, top: 5, zIndex: 1 }}
+                    onPress={handleSaveJobSource}>
+                    <Image
+                      style={{
+                        width: spacing.SCALE_30,
+                        height: spacing.SCALE_30,
+                      }}
+                      source={saveIcon}
+                    />
+                  </Pressable>
+                  <JobSource
+                    defaultButtonText="Salesperson"
+                    data={usersNames}
+                    leadSource={displayedJobSource}
+                    onSelect={(val, index) => setNewSalesPersonIndex(index)}
+                    online={newOnline}
+                    setOnline={setNewOnline}
+                    referral={newReferral}
+                    setReferral={setNewReferral}
+                  />
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
         {/* <Attachments /> */}
-        <Notes />
+        <Notes notes={displayedNotes} setModal={setShowNotesModal} />
+        <Modal visible={showNotesModal} transparent={true}>
+          <TouchableWithoutFeedback onPress={() => setShowNotesModal(false)}>
+            <View
+              style={{
+                flex: 1,
+                backgroundColor: 'rgba(0, 0, 0, 0.7)',
+              }}>
+              <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <View
+                  style={{
+                    width: '90%',
+                    marginTop: '40%',
+                    marginLeft: '5%',
+                    position: 'relative',
+                    height: '20%',
+                  }}>
+                  <Pressable style={{ position: 'absolute', right: 10, top: 20, zIndex: 1 }} onPress={handleSaveNotes}>
+                    <Image
+                      style={{
+                        width: spacing.SCALE_20,
+                        height: spacing.SCALE_20,
+                      }}
+                      source={saveIcon}
+                    />
+                  </Pressable>
+                  <JobNotes value={newNotes} onChangeText={setNewNotes} />
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
+
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginVertical: spacing.SCALE_40 }}>
           <BigButton
             width={spacing.SCALE_154}
             onPress={() =>
               navigation.navigate(SCREENS.INVOICE_SCREEN, {
-                lineItem: calendarData?.lineItem,
-                clientName: calendarData?.customer?.displayName,
+                jobId: calendarData?.jobId,
               })
             }>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -617,7 +743,7 @@ const JobDetailsPresenter = ({
             onPress={() =>
               navigation.navigate(SCREENS.CHECKOUTSCREEN, {
                 screen: SCREENS.CHECKOUT,
-                params: { totalAmount: calendarData?.jobTotal, jobId: calendarData?.jobId },
+                params: { jobId: calendarData?.jobId },
               })
             }>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>

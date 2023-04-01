@@ -149,7 +149,6 @@ const NewJobPresenter = ({ customers, users, addNewJob }) => {
   const [customerDisplayIndex, setCustomerDisplayIndex] = useState('');
   const [selectedAddress, setSelectedAddress] = useState('');
   const [selectUser, setSelectUser] = useState([]);
-  const { online, referral } = useContext(AppContext);
   const [showAccordian, setshowAccordian] = useState(false);
   const [salePersonDisplayIndex, setSalePersonDisplayIndex] = useState('');
   const [defaultCustomer, setDefaultCustomer] = useState('Customer');
@@ -160,6 +159,9 @@ const NewJobPresenter = ({ customers, users, addNewJob }) => {
 
   const [combinedStartTime, setCombinedStartTime] = useState(null);
   const [combinedEndTime, setCombinedEndTime] = useState(null);
+
+  const [online, setOnline] = useState(false);
+  const [referral, setReferral] = useState(false);
 
   useEffect(() => {
     console.log('combinedStartTime', combinedStartTime);
@@ -449,6 +451,10 @@ const NewJobPresenter = ({ customers, users, addNewJob }) => {
             onSelect={(val, index) => {
               setSalePersonDisplayIndex(index);
             }}
+            online={online}
+            setOnline={setOnline}
+            setReferral={setReferral}
+            referral={referral}
           />
         </View>
         <JobNotes onChangeText={text => setNote(text)} value={note} />

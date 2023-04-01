@@ -13,7 +13,7 @@ import JobDetailsPresenter from './JobDetailsPresenter';
 const JobDetailsCotainer = ({ route }) => {
   const calendarData = route?.params?.calendarData;
   // const calendarData = jobDetails;
-  console.log('🚀 ~ file: JobDetailsCotainer.js:10 ~ JobDetailsCotainer ~ calendarData:', calendarData);
+  // console.log('🚀 ~ file: JobDetailsCotainer.js:10 ~ JobDetailsCotainer ~ calendarData:', calendarData);
 
   const { userData } = useContext(UserContext);
 

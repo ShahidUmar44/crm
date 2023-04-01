@@ -24,9 +24,9 @@ const Accordian = ({ onPress, data, header, onPressDelete, index, onPressShowAcc
         </View>
         {showAccordian && (
           <>
-            {data.map(item => {
+            {data.map((item, key) => {
               return (
-                <View style={styles.listItemCardView}>
+                <View style={styles.listItemCardView} key={key}>
                   <View>
                     <Text style={{ color: colors.primary }}>{item.name}</Text>
                     <Text>${parseFloat(item.unitPrice).toFixed(2)}</Text>

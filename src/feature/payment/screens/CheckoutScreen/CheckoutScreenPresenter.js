@@ -42,7 +42,7 @@ const CheckoutScreenPresenter = ({ onNext, totalAmount }) => {
               fontSize: typography.FONT_SIZE_16,
               fontWeight: '500',
             }}>
-            $ {totalAmount}
+            ${totalAmount ? totalAmount?.toFixed(2) : ''}
           </Text>
         </View>
       </View>
