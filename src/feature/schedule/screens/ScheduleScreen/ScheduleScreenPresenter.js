@@ -26,22 +26,78 @@ const ScheduleScreenPresenter = ({ responseData, loading }) => {
     console.log('handlePress');
   };
 
+  function hexToRGBA(hex, alpha) {
+    const r = parseInt(hex.slice(1, 3), 16),
+      g = parseInt(hex.slice(3, 5), 16),
+      b = parseInt(hex.slice(5, 7), 16);
+
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+
   const calendarRef = useRef(null);
   //set Events
   const eventArr =
     responseData?.map(item => {
+      const notStarted = !item.startedJobTime ? true : false;
+      const finishedAndPaid = item.endedJobTime && item.datePaid ? true : false;
+      const startedNotFinished = item.startedJobTime && !item.endedJobTime ? true : false;
+      const finishedNotPaid = item.endedJobTime && !item.datePaid ? true : false;
+      const baseColor = item.dispatchedTo && item.dispatchedTo?.[0].color ? item.dispatchedTo?.[0].color : '#374151';
+      const backgroundColor = startedNotFinished ? hexToRGBA(baseColor, 0.3) : baseColor;
       return {
         id: item.jobId,
-        title: item.customer.displayName,
+        title: item.customer?.displayName,
         // description:
-        description: 'test description',
+        description: item.lineItems?.[0].name,
+        amount: item.jobTotal,
         start: moment(item.start.toDate()),
         end: moment(item.end.toDate()),
-        color: '#B1AFFF',
+        // color: '#f3f4f6',
+        // color: '#dbeafe',
+        // color: '#fef9c3',
+        color: backgroundColor,
+        paid: item.datePaid ? true : false,
+        notStarted: !item.startedJobTime ? true : false,
+        finishedAndPaid: item.endedJobTime && item.datePaid ? true : false,
+        startedNotFinished: item.startedJobTime && !item.endedJobTime ? true : false,
+        finishedNotPaid: item.endedJobTime && !item.datePaid ? true : false,
       };
     }) || [];
 
-  console.log('eventArr', eventArr);
+  function renderedEventContent(event) {
+    return (
+      <View
+        style={[
+          {
+            flex: 1,
+            flexDirection: 'column',
+            paddingTop: 10,
+            paddingHorizontal: 10,
+          },
+          event.finishedNotPaid
+            ? { borderWidth: 3, borderColor: '#ef4444' }
+            : event.finishedAndPaid
+            ? { borderWidth: 3, borderColor: '#22c55e' }
+            : event.startedNotFinished
+            ? { borderWidth: 3, borderColor: '#374151' }
+            : {},
+        ]}>
+        <Text style={{ color: 'black', fontWeight: 'bold', color: '#f9fafb' }}>{event.title}</Text>
+        {/* <Text style={{ color: 'black', marginTop: 10 }}>{event.description}</Text> */}
+        <Text style={{ color: 'black', marginTop: 10, color: '#fde047' }}>${event.amount.toFixed(2)}</Text>
+      </View>
+    );
+  }
+
+  // function renderedEventContent(event) {
+  //   return (
+  //     <View style={{ flex: 1, flexDirection: 'column', marginTop: 10, marginHorizontal: 10 }}>
+  //       <Text style={{ color: 'black', fontWeight: 'bold' }}>{event.title}</Text>
+  //       {/* <Text style={{ color: 'black', marginTop: 10 }}>{event.description}</Text> */}
+  //       <Text style={{ color: 'black', marginTop: 10 }}>${event.amount.toFixed(2)}</Text>
+  //     </View>
+  //   );
+  // }
 
   // onselect
   const onSelected = event => {
@@ -201,6 +257,7 @@ const ScheduleScreenPresenter = ({ responseData, loading }) => {
         }}
         locale="en"
         timeZone="America/Los_Angeles"
+        renderEventContent={renderedEventContent}
       />
     </View>
   );

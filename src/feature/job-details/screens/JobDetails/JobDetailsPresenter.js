@@ -133,6 +133,26 @@ const JobDetailsPresenter = ({
     }
   }, [calendarData?.startDrivingTime, calendarData?.endDrivingTime]);
 
+  // useEffect to set the start to the correct state initially based on calendar data
+  useEffect(() => {
+    if (!calendarData?.startedJobTime && !calendarData?.endedJobTime) {
+      setStart({ start: true, inProgress: false, end: false });
+    } else if (calendarData?.startedJobTime && !calendarData?.endedJobTime) {
+      setStart({ start: false, inProgress: true, end: false });
+    } else if (calendarData?.startedJobTime && calendarData?.endedJobTime) {
+      setStart({ start: false, inProgress: false, end: true });
+    }
+  }, [calendarData?.startedJobTime, calendarData?.endedJobTime]);
+
+  // useEffect to set the review to the correct state initially based on caledar data
+  useEffect(() => {
+    if (!calendarData?.reviewMessageSent) {
+      setReviewSent(false);
+    } else if (calendarData?.reviewMessageSent) {
+      setReviewSent(true);
+    }
+  }, [calendarData?.reviewMessageSent]);
+
   const [showModal, setShowModal] = useState({
     leaveScreen: false,
     addDiscount: false,

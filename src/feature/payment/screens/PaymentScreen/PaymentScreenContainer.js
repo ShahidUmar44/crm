@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { View, Text, TextInput, Pressable, Modal, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { doc, serverTimestamp, updateDoc, arrayUnion } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useStripe, useConfirmPayment, createPaymentMethod } from '@stripe/stripe-react-native';
 
@@ -29,6 +29,8 @@ const PaymentScreenContainer = ({ route }) => {
   const [selectedTip, setSelectedTip] = useState('notip');
 
   const { confirmPayment, loading } = useConfirmPayment();
+
+  const jobRef = doc(db, 'businesses', userData.bizData.id, 'jobs', jobDetails.jobId);
 
   useEffect(() => {
     if (!customTip) {
@@ -132,9 +134,43 @@ const PaymentScreenContainer = ({ route }) => {
 
     if (error) {
       console.log('Payment confirmation error', error);
+      try {
+        await updateDoc(jobRef, {
+          paymentHistory: arrayUnion({
+            status: error.code,
+            billingType: 'manual card',
+            date: new Date(),
+            type: error.type,
+            jobId: jobDetails?.jobId,
+            totalAmountFromStripe: 0,
+          }),
+          status: error.code,
+          datePaymentFailed: new Date(),
+        });
+      } catch (error) {
+        console.log('error', error);
+      }
       alert(`Error code: ${error.code}`, error.message);
     } else if (paymentIntent) {
       console.log('Success from promise', JSON.stringify(paymentIntent, null, 2));
+      // this is where we need to update firestore will all that good info... need to consult the manual payment modal on the web-app
+      try {
+        await updateDoc(jobRef, {
+          paymentHistory: arrayUnion({
+            status: 'paid',
+            billingType: 'manual card',
+            date: new Date(),
+            jobId: jobDetails?.jobId,
+            paymentNote: '',
+            otherOption: '',
+            totalAmountFromStripe: amount * 100,
+          }),
+          status: 'paid',
+          datePaid: new Date(),
+        });
+      } catch (error) {
+        console.log('error', error);
+      }
       navigation.navigate(SCREENS.SUCCESSPAYMENT, { jobDetails });
       setTimeout(() => {
         paymentAlert.close();
