@@ -93,7 +93,7 @@ const ScheduleScreenPresenter = ({ responseData, loading }) => {
             };
             calendarRef.current?.goToDate(optionalProps);
           }}>
-          <Text style={{ marginVertical: 10 }}>Today</Text>
+          <Text style={{ fontWeight: 'bold' }}>Today</Text>
         </Pressable>
         <View style={styles.buttonGroup}>
           <Pressable
@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerGroup: {
-    marginHorizontal: 4,
+    paddingHorizontal: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
   },
   topButton: {
     paddingVertical: spacing.SCALE_10,
-    width: '20%',
+    width: '24%',
     borderRadius: 10,
     alignItems: 'center',
     borderWidth: 0.5,
