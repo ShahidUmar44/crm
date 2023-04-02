@@ -10,15 +10,15 @@ const LeaveScreenModal = ({ visible, onPressCancel, onPressConfirm }) => {
     <View style={styles.container}>
       <Modal transparent={true} visible={visible} style={styles.modalContainer}>
         <View style={styles.innerView}>
-          <Text style={styles.text}>Are you sure you want to discard estimate ?</Text>
+          <Text style={styles.text}>Your changes will be discarded?</Text>
           <View style={styles.buttonView}>
             <TouchableOpacity style={styles.cancelButton} onPress={onPressCancel}>
-              <Text style={styles.text}>cancel</Text>
+              <Text style={styles.text}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={{ ...styles.cancelButton, backgroundColor: colors.primary, marginLeft: spacing.SCALE_10 }}
               onPress={onPressConfirm}>
-              <Text style={{ ...styles.text, color: colors.text }}>Yes</Text>
+              <Text style={{ ...styles.text, color: colors.text }}>Confirm</Text>
             </TouchableOpacity>
           </View>
         </View>

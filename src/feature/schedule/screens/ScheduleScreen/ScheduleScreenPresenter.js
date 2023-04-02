@@ -1,22 +1,30 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View, Animated } from 'react-native';
 import moment from 'moment';
 import { TimelineCalendar } from '@howljs/calendar-kit';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 
 import { SCREENS } from '../../../../constants';
 import { colors, spacing } from '../../../../theme';
+import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
+
+const AnimatedIonicons = Animated.createAnimatedComponent(Ionicons);
 
 const ScheduleScreenPresenter = ({ responseData, loading }) => {
   const { bottom: safeBottom } = useSafeAreaInsets();
   const navigation = useNavigation();
   const [viewMode, setViewMode] = useState('day');
+  const [iconAnimation] = useState(new Animated.Value(0));
 
-  console.log('we are here on presener screen');
   // useEffect(() => {
   //   console.log('jobs', responseData);
   // }, [responseData]);
+
+  const handleDatePress = () => {
+    console.log('handlePress');
+  };
 
   const calendarRef = useRef(null);
   //set Events
@@ -41,31 +49,118 @@ const ScheduleScreenPresenter = ({ responseData, loading }) => {
     const selectedEvent = responseData.find(item => item.jobId === event.id);
     navigation.navigate(SCREENS.JOBDETAILS, { calendarData: selectedEvent });
   };
+
+  const [showList, setShowList] = useState(false);
+  const handlePressAdd = () => {
+    setShowList(!showList);
+    Animated.timing(iconAnimation, {
+      toValue: showList ? 0 : 1,
+      duration: 500,
+      useNativeDriver: false,
+    }).start();
+  };
+
+  const handlePressOff = () => {
+    setShowList(false);
+    Animated.timing(iconAnimation, {
+      toValue: 0,
+      duration: 500,
+      useNativeDriver: false,
+    }).start();
+  };
+  const onPressAddJob = () => {
+    navigation.navigate(SCREENS.NEWJOB);
+    handlePressOff();
+  };
   return (
     <View style={[styles.container, { paddingBottom: safeBottom }]}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+      {showList && (
+        <View style={styles.listContainer}>
+          <Pressable onPress={onPressAddJob}>
+            <Text>Add Job</Text>
+          </Pressable>
+        </View>
+      )}
+      <View style={styles.headerGroup}>
         <Pressable
-          style={{ ...styles.topButton, backgroundColor: viewMode === 'day' ? colors.primary : colors.whiteBackground }}
-          onPress={() => setViewMode('day')}>
-          <Text style={{ color: viewMode === 'day' ? colors.text : colors.darkText }}>Day</Text>
+          onPress={() => {
+            //Optional
+            const optionalProps = {
+              //Default: today
+              hourScroll: true,
+              animatedHour: true,
+              animatedDate: true,
+            };
+            calendarRef.current?.goToDate(optionalProps);
+          }}>
+          <Text style={{ marginVertical: 10 }}>Today</Text>
         </Pressable>
+        <View style={styles.buttonGroup}>
+          <Pressable
+            style={{
+              ...styles.topButton,
+              backgroundColor: viewMode === 'day' ? colors.primary : colors.whiteBackground,
+            }}
+            onPress={() => setViewMode('day')}>
+            <Text style={{ color: viewMode === 'day' ? colors.yellow300 : colors.darkText }}>Day</Text>
+          </Pressable>
+
+          <Pressable
+            style={{
+              ...styles.topButton,
+              backgroundColor: viewMode === 'threeDays' ? colors.primary : colors.whiteBackground,
+            }}
+            onPress={() => setViewMode('threeDays')}>
+            <Text style={{ color: viewMode === 'threeDays' ? colors.yellow300 : colors.darkText }}>3 Days</Text>
+          </Pressable>
+          <Pressable
+            style={{
+              ...styles.topButton,
+              backgroundColor: viewMode === 'week' ? colors.primary : colors.whiteBackground,
+            }}
+            onPress={() => setViewMode('week')}>
+            <Text style={{ color: viewMode === 'week' ? colors.yellow300 : colors.darkText }}>Week</Text>
+          </Pressable>
+        </View>
         <Pressable
+          onPress={handlePressAdd}
           style={{
-            ...styles.topButton,
-            backgroundColor: viewMode === 'threeDays' ? colors.primary : colors.whiteBackground,
-          }}
-          onPress={() => setViewMode('threeDays')}>
-          <Text style={{ color: viewMode === 'threeDays' ? colors.text : colors.darkText }}>Three Days</Text>
-        </Pressable>
-        <Pressable
-          style={{
-            ...styles.topButton,
-            backgroundColor: viewMode === 'week' ? colors.primary : colors.whiteBackground,
-          }}
-          onPress={() => setViewMode('week')}>
-          <Text style={{ color: viewMode === 'week' ? colors.text : colors.darkText }}>Week</Text>
+            alignContent: 'center',
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+          }}>
+          <AnimatedIonicons
+            name="add-circle-outline"
+            size={35}
+            color={colors.primary}
+            style={{
+              zIndex: 1005,
+              transform: [
+                {
+                  rotate: iconAnimation.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: ['0deg', '45deg'],
+                  }),
+                },
+              ],
+            }}
+          />
         </Pressable>
       </View>
+      {/* <Pressable
+        onPress={() => {
+          //Optional
+          const optionalProps = {
+            //Default: today
+            hourScroll: true,
+            animatedHour: true,
+            animatedDate: true,
+          };
+          calendarRef.current?.goToDate(optionalProps);
+        }}>
+        <Text style={{ marginVertical: 10 }}>Today</Text>
+      </Pressable> */}
+
       <TimelineCalendar
         ref={calendarRef}
         viewMode={viewMode}
@@ -91,9 +186,9 @@ const ScheduleScreenPresenter = ({ responseData, loading }) => {
           sundayNumberContainer: { backgroundColor: 'white' },
 
           //Today style
-          todayName: { color: 'green' },
-          todayNumber: { color: 'white' },
-          todayNumberContainer: { backgroundColor: 'green' },
+          todayName: { color: '#a16207' },
+          todayNumber: { color: colors.gray800 },
+          todayNumberContainer: { backgroundColor: '#fde047' },
 
           //Normal style
           dayName: { color: 'black' },
@@ -114,7 +209,7 @@ const ScheduleScreenPresenter = ({ responseData, loading }) => {
 export default ScheduleScreenPresenter;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFF' },
+  container: { flex: 1 },
   headerRight: { marginRight: 16 },
   footer: {
     position: 'absolute',
@@ -134,6 +229,27 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
   },
+  listContainer: {
+    position: 'absolute',
+    top: spacing.SCALE_70,
+    right: spacing.SCALE_20,
+    backgroundColor: 'white',
+    width: '30%',
+    zIndex: 1000,
+    borderRadius: 10,
+    padding: 10,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    justifyContent: 'space-around',
+    paddingVertical: spacing.SCALE_20,
+    marginBottom: spacing.SCALE_20,
+  },
   button: {
     height: 45,
     paddingHorizontal: 24,
@@ -145,11 +261,25 @@ const styles = StyleSheet.create({
   },
   btnText: { fontSize: 16, color: '#FFF', fontWeight: 'bold' },
   halfLineContainer: { backgroundColor: 'transparent' },
+  buttonGroup: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerGroup: {
+    marginHorizontal: 4,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+  },
   topButton: {
     paddingVertical: spacing.SCALE_10,
-    width: '33%',
+    width: '20%',
+    borderRadius: 10,
     alignItems: 'center',
-    borderRightWidth: 0.5,
-    borderColor: colors.primary,
+    borderWidth: 0.5,
+    marginRight: 2,
+    borderColor: colors.gray700,
   },
 });

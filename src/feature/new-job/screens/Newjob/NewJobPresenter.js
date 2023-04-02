@@ -356,6 +356,7 @@ const NewJobPresenter = ({ customers, users, addNewJob }) => {
               leftIcon={searchIcon}
               searchText={searchText}
               setSearchText={setSearchText}
+              defaultButtonText="Search customers"
             />
           </View>
         )}
