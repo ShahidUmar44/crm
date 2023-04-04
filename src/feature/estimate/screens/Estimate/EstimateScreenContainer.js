@@ -1,61 +1,142 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useFocusEffect } from '@react-navigation/native';
-import { collection, doc, getDocs, query, setDoc } from 'firebase/firestore';
+import { collection, doc, getDocs, query, setDoc, serverTimestamp, where } from 'firebase/firestore';
 import React, { useContext, useEffect, useState } from 'react';
-import { AppContext } from '../../../../context/AppContext';
+import { UserContext } from '../../../../context/UserContext';
 import { db } from '../../../../utils/Firebase';
+import { SCREENS } from '../../../../constants';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { node } from '../../../../constants/index';
 
 import EstimateListScreenPresenter from './EstimateListScreenPresenter';
 
 const EstimateScreenContainer = () => {
-  const [responseData, setResponseData] = useState([]);
+  const navigation = useNavigation();
+  const { userData } = useContext(UserContext);
+
+  const [customers, setCustomers] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
-  const { start, end } = useContext(AppContext);
+  const [estimateLoading, setEstimateLoading] = useState(false);
+  const [estimateSent, setEstimateSent] = useState(false);
 
   const getAllCustomers = async () => {
-    let businessId = await AsyncStorage.getItem('userData');
+    let businessId = userData?.userData.businessId;
     setLoading(true);
-    let customerRef = query(collection(db, 'businesses', businessId, 'customers'));
-    let docSnap = await getDocs(customerRef);
-    let docArray = [];
-    docSnap.forEach(doc => {
-      let singleDoc = doc.data();
-      docArray.push(singleDoc);
-    });
-    setResponseData(docArray);
+    let customersRef = collection(db, 'businesses', businessId, 'customers');
+    let docSnap = await getDocs(customersRef);
+    const docArray = docSnap.docs.map(doc => doc.data());
+    setCustomers(docArray);
+    setLoading(false);
+  };
+  const getAllUsers = async () => {
+    setLoading(true);
+    let businessId = userData?.userData.businessId;
+    let usersRef = collection(db, 'users');
+    const allEmployees = query(usersRef, where('businessId', '==', businessId));
+
+    let docSnap = await getDocs(allEmployees);
+    const docArray = docSnap.docs.map(doc => doc.data());
+    setUsers(docArray);
     setLoading(false);
   };
 
   useFocusEffect(
     React.useCallback(() => {
       getAllCustomers();
+      getAllUsers();
 
       return () => {
-        setResponseData([]);
+        setCustomers([]);
+        setUsers([]);
       };
     }, []),
   );
 
-  const addNewEstimate = async ({ customer, dateAdded, lineItem, jobTotal, jobTags }) => {
-    let businessId = await AsyncStorage.getItem('userData');
+  const handleCreateAndSendEstimate = async ({
+    customer,
+    dateAdded,
+    leadSource,
+    lineItems,
+    estimateTotal,
+    note = '',
+  }) => {
+    if (!customer || !dateAdded || !lineItems || !estimateTotal) {
+      return;
+    }
+    setEstimateLoading(true);
+    let businessId = userData?.userData.businessId;
 
-    const newJobRef = doc(collection(db, 'businesses', businessId, 'estimates'));
-    const newJobData = {
-      estimateId: newJobRef.id,
+    const newEstimateRef = doc(collection(db, 'businesses', businessId, 'estimates'));
+    const newEstimateData = {
+      estimateId: newEstimateRef.id,
+      businessId,
       customer,
       dateAdded,
-      end,
-      start,
-      lineItem,
-      jobTotal,
-      jobTags,
+      lastUpdated: serverTimestamp(),
+      leadSource,
+      lineItems,
+      estimateTotal,
+      note,
+      timezone: userData.bizData.timezone,
     };
-    await setDoc(newJobRef, newJobData);
-    console.log('Estimate added');
-    // let item = { customer, dateAdded, dispatchTo, leadSource, lineItem, jobTotal, jobTags };
-    // navigation.navigate(SCREENS.CUSTOMER_DETAILS, { name: 'Estimate' });
+    console.log('newEstimateData', newEstimateData);
+    await setDoc(newEstimateRef, newEstimateData);
+
+    const response = await fetch(`${node}/estimate/estimate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        estimate: newEstimateData,
+        businessName: userData.bizData.companyName,
+        businessEmail: userData.bizData.email,
+        businessPhone: userData.bizData.phone,
+        businessAddress: userData.bizData.address,
+      }),
+    });
+
+    const { message } = await response.json();
+    console.log('response from email api', message);
+
+    if (message === 'Email sent') {
+      setEstimateSent(true);
+      setTimeout(() => {
+        navigation.goBack();
+      }, 2000);
+    } else {
+      alert('There was an error sending the email');
+    }
+    setEstimateLoading(false);
   };
-  return <EstimateListScreenPresenter responseData={responseData} addNewEstimate={addNewEstimate} />;
+
+  // const addNewEstimate = async ({ customer, dateAdded, lineItem, jobTotal, jobTags }) => {
+  //   let businessId = await AsyncStorage.getItem('userData');
+
+  //   const newJobRef = doc(collection(db, 'businesses', businessId, 'estimates'));
+  //   const newJobData = {
+  //     estimateId: newJobRef.id,
+  //     customer,
+  //     dateAdded,
+  //     end,
+  //     start,
+  //     lineItem,
+  //     jobTotal,
+  //     jobTags,
+  //   };
+  //   await setDoc(newJobRef, newJobData);
+  //   console.log('Estimate added');
+  //   // let item = { customer, dateAdded, dispatchTo, leadSource, lineItem, jobTotal, jobTags };
+  //   // navigation.navigate(SCREENS.CUSTOMER_DETAILS, { name: 'Estimate' });
+  // };
+  return (
+    <EstimateListScreenPresenter
+      customers={customers}
+      users={users}
+      addNewEstimate={handleCreateAndSendEstimate}
+      estimateLoading={estimateLoading}
+      estimateSent={estimateSent}
+    />
+  );
 };
 
 export default EstimateScreenContainer;

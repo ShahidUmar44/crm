@@ -271,7 +271,7 @@ const NewJobPresenter = ({ customers, users, addNewJob }) => {
       customer: selectedCustomer,
       dateAdded: serverTimestamp(),
       dispatchedTo: selectUser,
-      leadSource: { online, referral, salesPerson: users[salePersonDisplayIndex] },
+      leadSource: { online, referral, salesPerson: users[salePersonDisplayIndex] ? users[salePersonDisplayIndex] : '' },
       lineItems,
       jobTotal: totalPrice,
       note: note,
