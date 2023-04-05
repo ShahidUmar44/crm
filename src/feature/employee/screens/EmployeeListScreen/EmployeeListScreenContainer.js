@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { UserContext } from '../../../../context/UserContext';
 
 import { SCREENS } from '../../../../constants';
 import { colors, spacing } from '../../../../theme';
@@ -11,6 +12,7 @@ import { db } from '../../../../utils/Firebase';
 import { collection, deleteDoc, doc, getDocs, limit, query, where } from 'firebase/firestore';
 import { async } from '@firebase/util';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { node } from '../../../../constants';
 
 const data = [
   { id: '001', name: 'John Doe', email: 'johndoe@example.com' },
@@ -36,6 +38,7 @@ const data = [
 ];
 
 const EmployeeListScreenContainer = () => {
+  const { userData } = useContext(UserContext);
   const navigation = useNavigation();
   const deleteEmployeeAlert = useAlertControl();
   const [loading, setLoading] = useState(false);
@@ -72,44 +75,69 @@ const EmployeeListScreenContainer = () => {
     );
   };
   const getAllEmployees = async () => {
-    let businessId = await AsyncStorage.getItem('userData');
+    let businessId = userData.userData.businessId;
     setLoading(true);
-    let employeeRef = query(collection(db, 'users'));
+    let employeeRef = collection(db, 'users');
     const employeeQuery = query(employeeRef, where('businessId', '==', businessId), limit(50));
     let docSnap = await getDocs(employeeQuery);
-    let docArray = [];
-    docSnap.forEach(doc => {
-      let singleDoc = doc.data();
-      docArray.push(singleDoc);
-    });
+    let docArray = docSnap.docs.map(doc => doc.data());
     setEmployeeData(docArray);
     setLoading(false);
   };
 
-  console.log('DATA=====', employeeData);
+  console.log('employee data from container', employeeData);
 
   const handleDeleteEmployee = async close => {
-    console.log('Employee', employeeId);
-    const employeeRef = doc(db, 'users', employeeId);
-    await deleteDoc(employeeRef);
-    getAllEmployees();
-    close();
+    if (userData.userData.isAdmin == true) {
+      console.log('Employee', employeeId);
+      const response = await fetch(`${node}/employeedelete/delete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ uid: employeeId }),
+      });
+
+      const result = await response.json();
+      console.log(result);
+      if (result.success === true) {
+        alert('Employee deleted successfully');
+      } else {
+        alert('Error deleting employee');
+      }
+      getAllEmployees();
+      close();
+    } else {
+      alert('You are not authorized to delete employees');
+    }
   };
 
   const handleEditUser = item => {
-    navigation.navigate(SCREENS.ADD_EDIT_EMPLOYEE, {
-      employee: item,
-      header: 'Edit Employee',
-    });
+    if (userData.userData.isAdmin == true) {
+      navigation.navigate(SCREENS.ADD_EDIT_EMPLOYEE, {
+        employee: item,
+        header: 'Edit Employee',
+      });
+    } else {
+      console.log('not authorized');
+    }
   };
 
   const handleAddUser = () => {
-    navigation.navigate(SCREENS.ADD_EDIT_EMPLOYEE);
+    if (userData.userData.isAdmin == true) {
+      navigation.navigate(SCREENS.ADD_EDIT_EMPLOYEE);
+    } else {
+      alert('You are not authorized to add employees');
+    }
   };
 
   const handleDeleteUser = item => {
-    setEmployeeId(item.id);
-    deleteEmployeeAlert.alert('Are you sure you want to delete this user?');
+    if (userData.userData.isAdmin == true) {
+      setEmployeeId(item.id);
+      deleteEmployeeAlert.alert('Are you sure you want to delete this user?');
+    } else {
+      alert('You are not authorized to delete employees');
+    }
   };
 
   return (

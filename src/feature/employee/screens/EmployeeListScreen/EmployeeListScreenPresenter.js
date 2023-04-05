@@ -5,7 +5,7 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 
 import { SCREENS } from '../../../../constants';
 import Input from '../../../../shared/form/Input';
-import EmployeeCard from '../../components/EmployeeCard';
+import RealEmployeeCard from '../../components/RealEmployeeCard';
 import EmptyListCard from '../../components/EmptyListCard';
 import IconButton from '../../../../shared/buttons/IconButton';
 import { colors, spacing, typography } from '../../../../theme';
@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.SCALE_10,
   },
   header: {
-    marginLeft: '38%',
+    marginLeft: '25%',
     fontSize: typography.FONT_SIZE_20,
     fontFamily: typography.secondary,
     color: colors.primaryDarker,
@@ -45,6 +45,29 @@ const EmployeeListScreenPresenter = ({
 }) => {
   const navigation = useNavigation();
   const [search, setSearch] = useState('');
+  const [filteredData, setFilteredData] = useState([]);
+
+  useEffect(() => {
+    setFilteredData(employeeData);
+  }, [employeeData]);
+
+  useEffect(() => {
+    if (search === '') {
+      setFilteredData(employeeData);
+    } else {
+      setFilteredData(
+        employeeData.filter(item => {
+          const searchTerm = search.toLowerCase();
+          const firstNameMatch = item?.firstName?.toLowerCase()?.includes(searchTerm);
+          const lastNameMatch = item?.lastName?.toLowerCase()?.includes(searchTerm);
+          const emailMatch = item?.email?.toLowerCase()?.includes(searchTerm);
+          const phoneMatch = item?.phone?.toLowerCase()?.includes(searchTerm);
+
+          return firstNameMatch || lastNameMatch || emailMatch || phoneMatch;
+        }),
+      );
+    }
+  }, [search]);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -55,7 +78,7 @@ const EmployeeListScreenPresenter = ({
     <View style={styles.container}>
       <View style={styles.headerWrapper}>
         {/* <GoBackButton /> */}
-        <Text style={styles.header}>Employee</Text>
+        <Text style={styles.header}>Team Members</Text>
         <IconButton onPress={onAddUser}>
           <AntDesign name="adduser" size={20} color={colors.primaryDarker} />
         </IconButton>
@@ -67,7 +90,7 @@ const EmployeeListScreenPresenter = ({
         error={''}
         width="90%"
         leftImage={SearchIcon}
-        placeholder={'Search employee'}
+        placeholder={'Search'}
         height={spacing.SCALE_44}
         borderRadius={spacing.SCALE_22}
         backgroundColor={colors.shadow}
@@ -78,21 +101,19 @@ const EmployeeListScreenPresenter = ({
         </View>
       ) : (
         <FlatList
-          data={employeeData}
+          data={filteredData}
           style={{ width: '100%' }}
           renderItem={({ item }) => (
-            <EmployeeCard
+            <RealEmployeeCard
               item={item}
               onEditUser={() => onEditUser(item)}
-              onPressName={() =>
-                navigation.navigate(SCREENS.ADD_EDIT_EMPLOYEE, { header: 'Employee details', employee: item })
-              }
+              onPressName={() => onEditUser(item)}
               onDeleteUser={() => onDeleteUser(item)}
             />
           )}
           keyExtractor={item => item.id}
           ListEmptyComponent={EmptyListCard}
-          contentContainerStyle={{ flex: data?.length ? 0 : 1, paddingTop: spacing.SCALE_10 }}
+          contentContainerStyle={{ flex: employeeData?.length ? 0 : 1, paddingTop: spacing.SCALE_10 }}
         />
       )}
     </View>

@@ -5,13 +5,13 @@ import { Feather } from '@expo/vector-icons';
 import IconButton from '../../../shared/buttons/IconButton';
 import { colors, spacing, typography } from '../../../theme';
 
-const EmployeeCard = ({ item, onEditUser, onDeleteUser, onPressCard, onPressName }) => {
+const RealEmployeeCard = ({ item, onEditUser, onDeleteUser, onPressCard, onPressName }) => {
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
-        <IconButton onPress={onEditUser}>
+        {/* <IconButton onPress={onEditUser}>
           <Feather name="edit" size={18} color={colors.primaryDarker} />
-        </IconButton>
+        </IconButton> */}
         <IconButton onPress={onDeleteUser}>
           <Feather name="trash-2" size={18} color={colors.primaryDarker} />
         </IconButton>
@@ -22,17 +22,19 @@ const EmployeeCard = ({ item, onEditUser, onDeleteUser, onPressCard, onPressName
             <Text style={styles.cardTitle}>
               {item?.displayName ? item.displayName : `${item.firstName} ${item.lastName || ''}`}
             </Text>
-          </Pressable>
-          <Text style={styles.cardSubtitle}>
-            {'(' +
-              item?.phone.mobile.substring(2, 5) +
-              ') ' +
-              item?.phone.mobile.substring(5, 8) +
-              '-' +
-              item?.phone.mobile.substring(8, 12)}
-          </Text>
 
-          <Text style={styles.cardSubtitle}>{item?.email}</Text>
+            <Text style={styles.cardSubtitle}>{item?.userType}</Text>
+            <Text style={styles.cardSubtitle}>
+              {'(' +
+                item?.phone?.substring(2, 5) +
+                ') ' +
+                item?.phone?.substring(5, 8) +
+                '-' +
+                item?.phone?.substring(8, 12)}
+            </Text>
+
+            <Text style={styles.cardSubtitle}>{item?.email}</Text>
+          </Pressable>
         </View>
       </TouchableOpacity>
     </View>
@@ -45,7 +47,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 0.5,
     borderColor: colors.primaryDarker,
-    height: spacing.SCALE_88,
+    height: 120,
     marginVertical: 8,
     marginHorizontal: '5%',
     shadowColor: '#000',
@@ -76,4 +78,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default EmployeeCard;
+export default RealEmployeeCard;

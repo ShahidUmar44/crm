@@ -6,6 +6,7 @@ import { Colors } from 'react-native/Libraries/NewAppScreen';
 import AppNavigator from './src/navigation';
 import { AppContextProvider } from './src/context/AppContext';
 import { UserContextProvider } from './src/context/UserContext';
+import { Provider as PaperProvider } from 'react-native-paper';
 
 const App = () => {
   const isDarkMode = useColorScheme() === 'dark';
@@ -29,10 +30,12 @@ const App = () => {
   return (
     <AppContextProvider>
       <UserContextProvider>
-        <SafeAreaView style={backgroundStyle}>
-          <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-          <AppNavigator />
-        </SafeAreaView>
+        <PaperProvider>
+          <SafeAreaView style={backgroundStyle}>
+            <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+            <AppNavigator />
+          </SafeAreaView>
+        </PaperProvider>
       </UserContextProvider>
     </AppContextProvider>
   );

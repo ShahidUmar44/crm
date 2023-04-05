@@ -4,8 +4,8 @@ import { StyleSheet, Text, View } from 'react-native';
 const EmptyListCard = () => {
   return (
     <View style={styles.emptyCardContainer}>
-      <Text style={styles.heading}>No items to display</Text>
-      <Text style={styles.message}>Please add items to the list</Text>
+      <Text style={styles.heading}>Nothing to display here</Text>
+      {/* <Text style={styles.message}>Please add items to the list</Text> */}
     </View>
   );
 };

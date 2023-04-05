@@ -5,6 +5,7 @@ module.exports = function (api) {
     plugins: [
       [
         'module-resolver',
+
         {
           root: ['.'],
           alias: {
@@ -18,6 +19,7 @@ module.exports = function (api) {
         },
       ],
       'react-native-reanimated/plugin',
+      'react-native-paper/babel',
     ],
   };
 };

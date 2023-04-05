@@ -129,7 +129,7 @@ const ScheduleScreenPresenter = ({ responseData, loading }) => {
     handlePressOff();
   };
   return (
-    <View style={[styles.container, { paddingBottom: safeBottom }]}>
+    <View style={[styles.container, { paddingBottom: 0 }]}>
       {showList && (
         <View style={styles.listContainer}>
           <Pressable onPress={onPressAddJob}>

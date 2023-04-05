@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, View, Text, StyleSheet } from 'react-native';
+import { ScrollView, View, Text, StyleSheet, Pressable } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import { useForm, Controller } from 'react-hook-form';
 
@@ -9,6 +9,7 @@ import IconButton from '../../../../shared/buttons/IconButton';
 import { colors, spacing, typography } from '../../../../theme';
 import ErrorMessage from '../../../../shared/form/ErrorMessage';
 import GoBackButton from '../../../../shared/buttons/GoBackButton';
+import { RadioButton } from 'react-native-paper';
 
 import eye from '@assets/images/eye.png';
 import eyeOff from '@assets/images/eye-off.png';
@@ -17,6 +18,29 @@ import phoneIcon from '@assets/images/phone.png';
 import errorIcon from '@assets/images/error.png';
 import emailIcon from '@assets/images/email-icon.png';
 import passwordIcon from '@assets/images/password-icon.png';
+
+const plans = [
+  {
+    id: '1',
+    name: 'Admin',
+    description: 'Can manage all areas.',
+  },
+  {
+    id: '2',
+    name: 'Manager',
+    description: 'Can edit job, team, and customer info. Recommended for team leads or office staff.',
+  },
+  {
+    id: '3',
+    name: 'Salesperson',
+    description: 'Can edit job and customer info. Recommended for salespeople.',
+  },
+  {
+    id: '4',
+    name: 'Field Tech',
+    description: 'Can view their own jobs, schedule, mark work complete, and add notes. Recommended for field techs.',
+  },
+];
 
 const styles = StyleSheet.create({
   container: {
@@ -27,6 +51,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: '5%',
   },
   title: {
+    marginRight: '30%',
     textAlign: 'center',
     color: colors.primaryDarker,
     fontSize: typography.FONT_SIZE_20,
@@ -60,21 +85,69 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     backgroundColor: colors.shadow,
   },
+  radioButton: {
+    marginBottom: 10,
+  },
+  radioButtonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  labelContainer: {
+    width: '80%',
+  },
+  planName: {
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  planDescription: {
+    fontSize: 12,
+  },
+  radioContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 20,
+  },
 });
 
+// const regex = {
+//   email: /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/g,
+//   password: /(?=.*[A-Z])(?=.*[\W_])(?=.*[a-z]).{8,}/,
+// };
+
 const regex = {
-  email: /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/g,
+  email:
+    /^[a-zA-Z0-9.!#$%&'*+\-/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/,
   password: /(?=.*[A-Z])(?=.*[\W_])(?=.*[a-z]).{8,}/,
 };
 
 const AddEditEmployeeScreenPresenter = ({ handleBackPress, formHeader, handleAddEmployee, employee }) => {
   const [showPassword, setShowPassword] = useState(false);
-  const [tags, setTags] = useState([]);
-  const [singleTag, setSingleTag] = useState('');
+  const [selectedPlan, setSelectedPlan] = useState('Admin');
+  const [phoneNumber, setPhoneNumber] = useState(employee ? employee.phone : '');
 
-  useEffect(() => {
-    setValue('userTags', tags);
-  }, [tags]);
+  const formatPhoneNumber = inputValue => {
+    const cleanValue = inputValue.replace(/\D+/g, '');
+    const limitedValue = cleanValue.slice(0, 10);
+    const match = limitedValue.match(/^(\d{1,3})(\d{0,3})(\d{0,4})$/);
+    if (match) {
+      const formattedNumber = `${match[1] ? '(' + match[1] : ''}${match[2] ? ') ' + match[2] : ''}${
+        match[3] ? '-' + match[3] : ''
+      }`;
+      return formattedNumber.trim();
+    }
+    return inputValue;
+  };
+  const [formattedPhoneNumber, setFormattedPhoneNumber] = useState(
+    phoneNumber ? formatPhoneNumber(phoneNumber.slice(2, 12)) : '',
+  );
+  const unformatPhoneNumber = formattedValue => {
+    const unformattedValue = formattedValue.replace(/\D+/g, '');
+    return `+1${unformattedValue}`; // Assuming US phone numbers
+  };
+
+  const handlePlanChange = value => {
+    setSelectedPlan(value);
+  };
 
   const {
     control,
@@ -87,26 +160,16 @@ const AddEditEmployeeScreenPresenter = ({ handleBackPress, formHeader, handleAdd
       firstName: employee ? employee.firstName : '',
       lastName: employee ? employee.lastName : '',
       email: employee ? employee.email : '',
-      phoneNumber: employee ? employee.phone : '',
       password: '',
-      employeeType: employee ? employee.userType : '',
-      userTags: employee?.userTags ? employee?.userTags : tags,
     },
   });
   const onSubmit = data => {
-    const { firstName, lastName, email, phoneNumber, password, employeeType, userTags } = data;
-    handleAddEmployee({ firstName, lastName, email, phoneNumber, password, employeeType, userTags });
-  };
+    const { firstName, lastName, email, password } = data;
 
-  const addTags = () => {
-    let arr = [singleTag, ...tags];
-    setTags(arr);
-    setSingleTag('');
-  };
-  const onRemove = index => {
-    let arr = [...tags];
-    arr.splice(index, 1);
-    setTags(arr);
+    if (!selectedPlan) {
+      return;
+    }
+    handleAddEmployee({ firstName, lastName, email, phoneNumber, password, employeeType: selectedPlan });
   };
 
   return (
@@ -201,7 +264,7 @@ const AddEditEmployeeScreenPresenter = ({ handleBackPress, formHeader, handleAdd
         />
         {errors.email && <ErrorMessage errors={errors} name="email" alignment="center" />}
 
-        <Controller
+        {/* <Controller
           name="phoneNumber"
           control={control}
           rules={{
@@ -226,6 +289,16 @@ const AddEditEmployeeScreenPresenter = ({ handleBackPress, formHeader, handleAdd
               rightIconStyle={styles.rightIconStyle}
             />
           )}
+        /> */}
+        <Input
+          leftImage={phoneIcon}
+          value={formattedPhoneNumber}
+          keyboardType="numeric"
+          onChangeText={text => {
+            setFormattedPhoneNumber(formatPhoneNumber(text));
+            setPhoneNumber(unformatPhoneNumber(text));
+          }}
+          placeholder="Mobile Number"
         />
         {errors.phoneNumber && <ErrorMessage errors={errors} name="phoneNumber" alignment="center" />}
         {!formHeader && (
@@ -240,7 +313,7 @@ const AddEditEmployeeScreenPresenter = ({ handleBackPress, formHeader, handleAdd
               },
               pattern: {
                 value: regex.password,
-                message: '*Please enter valid password',
+                message: '*Password needs to have at least 1 uppercase, 1 lowercase, 1 number and 1 special character',
               },
             }}
             render={({ field: { onChange, onBlur, value } }) => (
@@ -263,27 +336,21 @@ const AddEditEmployeeScreenPresenter = ({ handleBackPress, formHeader, handleAdd
         )}
         {errors.password && <ErrorMessage errors={errors} name="password" alignment="center" />}
 
-        <Controller
-          name="employeeType"
-          control={control}
-          rules={{
-            required: '*Company size is required',
-          }}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <Input
-              value={value}
-              onBlur={onBlur}
-              onChange={onChange}
-              onChangeText={onChange}
-              editable={formHeader === 'Employee details' ? false : true}
-              error={errors.employeeType}
-              leftImage={userIcon}
-              placeholder={'Admin/Employee'}
-              rightImage={errors.employeeType ? errorIcon : null}
-              rightIconStyle={styles.rightIconStyle}
-            />
-          )}
-        />
+        <View style={styles.radioContainer}>
+          <RadioButton.Group onValueChange={value => handlePlanChange(value)} value={selectedPlan}>
+            {plans.map(plan => (
+              <Pressable key={plan.id} onPress={() => handlePlanChange(plan.name)} style={styles.radioButton}>
+                <View style={styles.radioButtonRow}>
+                  <View style={styles.labelContainer}>
+                    <Text style={styles.planName}>{plan.name}</Text>
+                    <Text style={styles.planDescription}>{plan.description}</Text>
+                  </View>
+                  <RadioButton value={plan.name} />
+                </View>
+              </Pressable>
+            ))}
+          </RadioButton.Group>
+        </View>
         {errors.employeeType && <ErrorMessage errors={errors} name="employeeType" alignment="center" />}
 
         {/* <Controller

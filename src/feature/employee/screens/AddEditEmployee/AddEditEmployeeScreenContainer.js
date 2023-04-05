@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { View } from 'react-native';
-
+import { UserContext } from '../../../../context/UserContext';
 import { colors, spacing } from '../../../../theme';
 import SmallButton from '../../../../shared/buttons/SmallButton';
 import AddEditEmployeeScreenPresenter from './AddEditEmployeeScreenPresenter';
@@ -9,10 +9,12 @@ import { useNavigation } from '@react-navigation/native';
 import { SCREENS } from '../../../../constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { auth, db } from '../../../../utils/Firebase';
-import { doc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, serverTimestamp, setDoc, updateDoc, collection } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { node } from '../../../../constants';
 
 const AddEditEmployeeScreenContainer = ({ route }) => {
+  const { userData } = useContext(UserContext);
   const formHeader = route?.params?.header;
   const employee = route?.params?.employee;
   const addEditEmployeeAlert = useAlertControl();
@@ -27,18 +29,18 @@ const AddEditEmployeeScreenContainer = ({ route }) => {
           justifyContent: 'space-around',
         }}>
         <SmallButton
-          text="Discard changes"
+          text="Cancel"
           onPress={() => {
-            navigation.goBack();
+            close();
           }}
           color={colors.whiteBackground}
           textColor={colors.primaryDarker}
           width={spacing.SCALE_154}
         />
         <SmallButton
-          text="Continue changes"
+          text="Confirm"
           onPress={() => {
-            close();
+            navigation.goBack();
           }}
           textColor={colors.text}
           width={spacing.SCALE_154}
@@ -52,54 +54,84 @@ const AddEditEmployeeScreenContainer = ({ route }) => {
     if (formHeader === 'Employee details') {
       navigation.goBack();
     }
-    addEditEmployeeAlert.alert('You have unsaved changes');
+    addEditEmployeeAlert.alert('Your changes will be discarded');
   };
 
-  const handleAddEmployee = async ({ firstName, lastName, email, phoneNumber, password, employeeType, userTags }) => {
+  const handleAddEmployee = async ({ firstName, lastName, email, phoneNumber, password, employeeType }) => {
     if (formHeader === 'Employee details') {
       navigation.goBack();
     }
     if (!employee) {
-      let createUser = await createUserWithEmailAndPassword(auth, email, password);
-      console.log('User sign up');
-      let businessId = await AsyncStorage.getItem('userData');
+      console.log('This is where we create a new employee');
 
-      const employeeRef = doc(db, 'users', createUser.user.uid);
-      let employeeObject = {
-        firstName: firstName,
-        lastName: lastName,
-        id: createUser.user.uid,
-        email: email,
-        phone: phoneNumber,
-        businessId: businessId,
-        createdAt: serverTimestamp(),
-        isAdmin: 'true',
-        userType: employeeType,
-      };
+      let businessId = userData.userData.businessId;
 
-      await setDoc(employeeRef, employeeObject);
-      console.log('Employee added');
+      try {
+        const response = await fetch(`${node}/employees/create-employee`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email,
+            password,
+            firstName: firstName.slice(0, 1).toUpperCase() + firstName.slice(1),
+            lastName: lastName.slice(0, 1).toUpperCase() + lastName.slice(1),
+            phone: phoneNumber,
+            userType: employeeType,
+            businessId: businessId,
+          }),
+        });
+
+        const result = await response.json();
+        console.log('result: ', result);
+
+        console.log('Employee created with UID:', result.uid);
+
+        // send them a email that has their email and password so they can login -- going to need to fetch node server
+
+        if (!result.uid) {
+          alert('Error creating employee');
+          return;
+        }
+        const res = await fetch(`${node}/employees/send-email`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: email,
+            password: password,
+            firstName: firstName.slice(0, 1).toUpperCase() + firstName.slice(1),
+            lastName: lastName.slice(0, 1).toUpperCase() + lastName.slice(1),
+            businessName: userData.bizData.companyName,
+            phone: phoneNumber,
+          }),
+        });
+
+        const { message } = await res.json();
+
+        console.log(message);
+      } catch (error) {
+        console.log(error);
+      }
     } else {
-      let businessId = await AsyncStorage.getItem('userData');
-      const employeeRef = doc(db, 'users', businessId);
+      console.log('This is where we update an employee');
+      let employeeId = employee.id;
+      const employeeRef = doc(db, 'users', employeeId);
 
-      let employeeObject = {
+      let updateObject = {
         firstName: firstName,
         lastName: lastName,
         email: email,
         phone: phoneNumber,
-        businessId: employeeRef.id,
-        createdAt: serverTimestamp(),
-        isAdmin: 'true',
+        isAdmin: employeeType === 'Admin' ? 'true' : 'false',
         userType: employeeType,
       };
-      let updateObject = {
-        ...employeeObject,
-        createdAt: employee.createdAt,
-        updatedAt: serverTimestamp(),
-      };
-      const updateEmployeeRef = doc(db, 'users', employee.id);
-      await updateDoc(updateEmployeeRef, updateObject);
+
+      console.log('updateObject', updateObject);
+
+      await updateDoc(employeeRef, updateObject);
       console.log('Employee updated');
     }
     navigation.navigate(SCREENS.EMPLOYEES_LIST);
