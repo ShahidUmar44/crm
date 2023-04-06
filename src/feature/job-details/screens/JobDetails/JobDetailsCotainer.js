@@ -1,5 +1,5 @@
 import React, { useContext, useState, useCallback } from 'react';
-import { doc, serverTimestamp, updateDoc, collection, query, getDocs, where } from 'firebase/firestore';
+import { doc, serverTimestamp, updateDoc, collection, query, getDocs, where, getDoc } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { jobDetails } from '../../../../example_docs';
 import { UserContext } from '../../../../context/UserContext';
@@ -9,13 +9,32 @@ import { useFocusEffect } from '@react-navigation/native';
 
 import { db } from '../../../../utils/Firebase';
 import JobDetailsPresenter from './JobDetailsPresenter';
+import { useEffect } from 'react';
 
 const JobDetailsCotainer = ({ route }) => {
-  const calendarData = route?.params?.calendarData;
+  const jobDetails = route?.params?.calendarData;
+  // const jobId = route?.params?.jobId;
+
+  console.log('jobdetails from state', jobDetails?.jobId);
+  // console.log('jobid from state', jobId);
+  const [calendarData, setCalendarData] = useState(jobDetails || null);
   // const calendarData = jobDetails;
   // console.log('🚀 ~ file: JobDetailsCotainer.js:10 ~ JobDetailsCotainer ~ calendarData:', calendarData);
 
   const { userData } = useContext(UserContext);
+
+  console.log('calendarData', calendarData?.jobId);
+
+  const refreshJobData = async () => {
+    console.log('refresh job data called');
+    try {
+      const jobRef = doc(db, 'businesses', userData?.userData?.businessId, 'jobs', calendarData?.jobId || jobId);
+      const jobSnap = await getDoc(jobRef);
+      setCalendarData(jobSnap.data());
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const handleStartDrivingTime = async () => {
     const businessId = userData.userData.businessId;
@@ -152,10 +171,9 @@ const JobDetailsCotainer = ({ route }) => {
   useFocusEffect(
     useCallback(() => {
       getAllUsers();
+      refreshJobData();
 
-      return () => {
-        setUsers([]);
-      };
+      return () => {};
     }, []),
   );
 
@@ -168,6 +186,7 @@ const JobDetailsCotainer = ({ route }) => {
       handleEndTime={handleEndTime}
       sendReview={sendReview}
       users={users}
+      refreshData={refreshJobData}
     />
   );
 };

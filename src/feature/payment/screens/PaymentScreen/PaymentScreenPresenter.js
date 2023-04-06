@@ -97,13 +97,14 @@ const CardScreenPresenter = ({ onPayPress, processingPayment, onPayViaCash, onPa
             <Text
               style={{
                 color: colors.lightColor,
-                textTransform: 'uppercase',
+                fontSize: typography.FONT_SIZE_18,
+                fontWeight: 'bold',
               }}>
               Pay With Card
             </Text>
           </BigButton>
 
-          <View
+          {/* <View
             style={{
               flex: 1,
               marginTop: 30,
@@ -135,8 +136,8 @@ const CardScreenPresenter = ({ onPayPress, processingPayment, onPayViaCash, onPa
                 width={spacing.SCALE_162}
                 color={colors.primaryDarker}
               />
-            </View>
-          </View>
+            </View> */}
+          {/* </View> */}
         </View>
       </KeyboardAwareScrollView>
     </View>

@@ -85,7 +85,7 @@ const EmployeeListScreenContainer = () => {
     setLoading(false);
   };
 
-  console.log('employee data from container', employeeData);
+  // console.log('employee data from container', employeeData);
 
   const handleDeleteEmployee = async close => {
     if (userData.userData.isAdmin == true) {

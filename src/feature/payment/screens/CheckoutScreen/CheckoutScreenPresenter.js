@@ -8,7 +8,7 @@ import SmallButton from '../../../../shared/buttons/SmallButton';
 import GoBackButton from '../../../../shared/buttons/GoBackButton';
 import InputSecondary from '../../../../shared/form/InputSecondary';
 
-const CheckoutScreenPresenter = ({ onNext, totalAmount }) => {
+const CheckoutScreenPresenter = ({ onNext, totalAmount, onOther }) => {
   const [notes, setNotes] = useState('');
   const [saveNotes, setSaveNotes] = useState(false);
 
@@ -47,47 +47,40 @@ const CheckoutScreenPresenter = ({ onNext, totalAmount }) => {
         </View>
       </View>
       <View style={{ height: 1, backgroundColor: colors.dim, marginVertical: 20 }} />
-      {/* We are only adding a note on cash check e-transfer or other payments  */}
-      {/* <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Text style={{ color: colors.primaryDarker, fontSize: typography.FONT_SIZE_16, fontWeight: '600' }}>Note</Text>
-        <View style={{ flexDirection: 'row' }}>
-          <IconButton onPress={() => setSaveNotes(false)}>
-            <AntDesign name="edit" size={20} color={colors.primaryDarker} />
-          </IconButton>
-          <IconButton
-            onPress={() => {
-              setSaveNotes(false);
-              setNotes('');
-            }}>
-            <AntDesign name="delete" size={20} color={colors.primaryDarker} />
-          </IconButton>
-        </View>
+      <View
+        style={{
+          ...styles.spacing,
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+        <SmallButton
+          text="Pay with card"
+          onPress={onNext}
+          textColor={colors.text}
+          width={spacing.SCALE_154}
+          color={colors.primaryDarker}
+        />
       </View>
-      <InputSecondary
-        value={notes}
-        placeholder="Write a note"
-        onChangeText={setNotes}
-        multiline={true}
-        height={spacing.SCALE_154}
-        disabled={saveNotes}
-      /> */}
-      <View style={styles.spacing}>
+      <View
+        style={{
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          marginTop: 30,
+        }}>
+        <Text style={{ color: colors.primaryDarker, fontSize: typography.FONT_SIZE_16, fontWeight: '600' }}>
+          Or pay with
+        </Text>
         <View
           style={{
-            flex: 1,
+            marginTop: 30,
             flexDirection: 'row',
-            justifyContent: 'space-around',
+            justifyContent: 'center',
           }}>
-          {/* <SmallButton
-            text="Save"
-            onPress={() => setSaveNotes(true)}
-            textColor={colors.text}
-            color={colors.primaryDarker}
-            width={spacing.SCALE_154}
-          /> */}
           <SmallButton
-            text="Next"
-            onPress={onNext}
+            text="Other  option"
+            onPress={onOther} // change this onPress to handle other payment option
             textColor={colors.text}
             width={spacing.SCALE_154}
             color={colors.primaryDarker}
@@ -106,6 +99,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     paddingHorizontal: '5%',
     backgroundColor: colors.whiteBackground,
+    flexDirection: 'column',
   },
   headerWrapper: {
     flexDirection: 'row',

@@ -27,7 +27,7 @@ const JobSourceDisplay = ({ data, setModal }) => {
           </Pressable>
         </View>
         <View style={styles.dispatchCard}>
-          {!data.salesPerson && !data.online && !data.referral && (
+          {!data?.salesPerson && !data?.online && !data?.referral && (
             <>
               <View style={styles.employeeCard}>
                 <Image style={styles.icon} source={userIcon} />
@@ -35,7 +35,7 @@ const JobSourceDisplay = ({ data, setModal }) => {
               </View>
             </>
           )}
-          {data.salesPerson && (
+          {data?.salesPerson && (
             <>
               <View style={styles.employeeCard}>
                 <Image style={styles.icon} source={userIcon} />
@@ -59,13 +59,13 @@ const JobSourceDisplay = ({ data, setModal }) => {
           )}
 
           <View>
-            {data.online && (
+            {data?.online && (
               <View style={styles.employeeCard}>
                 <Image style={styles.icon} source={onlineIcon} />
                 <Text style={styles.text}>{data.online ? 'Online' : ''}</Text>
               </View>
             )}
-            {data.referral && (
+            {data?.referral && (
               <View style={styles.employeeCard}>
                 <Image style={styles.icon} source={friendsIcon} />
                 <Text style={styles.text}>{data.referral ? 'Referral' : ''}</Text>

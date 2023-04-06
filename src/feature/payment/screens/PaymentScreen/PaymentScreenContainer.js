@@ -152,20 +152,22 @@ const PaymentScreenContainer = ({ route }) => {
       }
       alert(`Error code: ${error.code}`, error.message);
     } else if (paymentIntent) {
-      console.log('Success from promise', JSON.stringify(paymentIntent, null, 2));
+      // console.log('Success from promise', JSON.stringify(paymentIntent, null, 2));
+
+      console.log('paymentIntent.status', paymentIntent.status);
       // this is where we need to update firestore will all that good info... need to consult the manual payment modal on the web-app
       try {
         await updateDoc(jobRef, {
           paymentHistory: arrayUnion({
-            status: 'paid',
+            status: paymentIntent.status.toLocaleLowerCase(),
             billingType: 'manual card',
             date: new Date(),
             jobId: jobDetails?.jobId,
-            paymentNote: '',
-            otherOption: '',
-            totalAmountFromStripe: amount * 100,
+            captureMethod: paymentIntent.captureMethod,
+            totalAmountFromStripe: paymentIntent.amount,
+            paymentIntentId: paymentIntent.id,
           }),
-          status: 'paid',
+          status: paymentIntent.status.toLocaleLowerCase() === 'succeeded' ? 'paid' : 'due',
           datePaid: new Date(),
         });
       } catch (error) {

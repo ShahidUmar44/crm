@@ -26,7 +26,11 @@ const CheckoutScreenContanier = ({ route }) => {
     navigation.navigate(SCREENS.PAYMENT, { jobDetails });
   };
 
-  return <CheckoutScreenPresenter onNext={handleNext} totalAmount={jobDetails?.jobTotal} />;
+  const handleOther = () => {
+    navigation.navigate('OtherPayment', { jobDetails });
+  };
+
+  return <CheckoutScreenPresenter onNext={handleNext} totalAmount={jobDetails?.jobTotal} onOther={handleOther} />;
 };
 
 export default CheckoutScreenContanier;

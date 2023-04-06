@@ -42,8 +42,15 @@ const ScheduleScreenPresenter = ({ responseData, loading }) => {
       const finishedAndPaid = item.endedJobTime && item.datePaid ? true : false;
       const startedNotFinished = item.startedJobTime && !item.endedJobTime ? true : false;
       const finishedNotPaid = item.endedJobTime && !item.datePaid ? true : false;
-      const baseColor = item.dispatchedTo && item.dispatchedTo?.[0].color ? item.dispatchedTo?.[0].color : '#374151';
-      const backgroundColor = startedNotFinished ? hexToRGBA(baseColor, 0.3) : baseColor;
+      const baseColor =
+        item.dispatchedTo && item.dispatchedTo[0].color.value ? item.dispatchedTo[0].color.value : '#374151';
+      let backgroundColor = hexToRGBA(baseColor, 0.7);
+
+      if (startedNotFinished) {
+        backgroundColor = hexToRGBA(baseColor, 0.3);
+      } else if (item.endedJobTime) {
+        backgroundColor = hexToRGBA('#374151', 0.1);
+      }
       return {
         id: item.jobId,
         title: item.customer?.displayName,
@@ -75,16 +82,16 @@ const ScheduleScreenPresenter = ({ responseData, loading }) => {
             paddingHorizontal: 10,
           },
           event.finishedNotPaid
-            ? { borderWidth: 3, borderColor: '#ef4444' }
+            ? { borderWidth: 2, borderColor: '#ef4444' }
             : event.finishedAndPaid
-            ? { borderWidth: 3, borderColor: '#22c55e' }
+            ? { borderWidth: 2, borderColor: '#22c55e' }
             : event.startedNotFinished
-            ? { borderWidth: 3, borderColor: '#374151' }
+            ? { borderWidth: 2, borderColor: '#374151' }
             : {},
         ]}>
-        <Text style={{ color: 'black', fontWeight: 'bold', color: '#f9fafb' }}>{event.title}</Text>
+        <Text style={{ color: 'black', fontWeight: 'bold', color: colors.gray800 }}>{event.title}</Text>
         {/* <Text style={{ color: 'black', marginTop: 10 }}>{event.description}</Text> */}
-        <Text style={{ color: 'black', marginTop: 10, color: '#fde047' }}>${event.amount.toFixed(2)}</Text>
+        <Text style={{ color: 'black', marginTop: 10, color: colors.gray700 }}>${event.amount.toFixed(2)}</Text>
       </View>
     );
   }

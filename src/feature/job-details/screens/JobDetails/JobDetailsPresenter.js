@@ -51,6 +51,8 @@ import { UserContext } from '../../../../context/UserContext';
 import DispatchModal from '../../../new-job/screens/components/DispatchModal';
 import JobSourceDisplay from './components/JobSourceDisplay';
 import JobNotes from '../../../../shared/notes/JobNotes';
+import PaymentHistory from './components/PaymentHistory';
+import Refund from './components/Refund';
 
 import playIcon from '../../../../../assets/images/playIcon.png';
 import truckIcon from '../../../../../assets/images/truckIcon.png';
@@ -71,6 +73,7 @@ const JobDetailsPresenter = ({
   handleEndTime,
   sendReview,
   users,
+  refreshData,
 }) => {
   const { user, userData } = useContext(UserContext);
   const navigation = useNavigation();
@@ -111,6 +114,36 @@ const JobDetailsPresenter = ({
   const [showNotesModal, setShowNotesModal] = useState(false);
   const [displayedNotes, setDisplayedNotes] = useState(calendarData?.note ? calendarData?.note : '');
   const [newNotes, setNewNotes] = useState(calendarData?.note ? calendarData?.note : '');
+
+  const [paymentHistory, setPaymentHistory] = useState(
+    calendarData?.paymentHistory ? calendarData?.paymentHistory : null,
+  );
+
+  useEffect(() => {
+    setKeywordArr(calendarData?.jobTags ? calendarData?.jobTags : []);
+    setLineItems(calendarData?.lineItems ? calendarData?.lineItems : []);
+    setMaterialArray(calendarData?.lineItem?.seriveces ? calendarData?.lineItem?.seriveces : []);
+    setDiscount(calendarData?.lineItem?.discount?.discount ? calendarData?.lineItem?.discount?.discount : 0);
+    setDisplayStartTime(new Date(calendarData?.start.seconds * 1000));
+    setDisplayEndTime(new Date(calendarData?.end.seconds * 1000));
+    setCombinedStartTime(new Date(calendarData?.start.seconds * 1000));
+    setCombinedEndTime(new Date(calendarData?.end.seconds * 1000));
+    setSelectUser(calendarData?.dispatchedTo);
+    setDisplayedUsers(calendarData?.dispatchedTo);
+    setDisplayedJobSource(calendarData?.leadSource);
+    setDisplayedNotes(calendarData?.note ? calendarData?.note : '');
+    setNewNotes(calendarData?.note ? calendarData?.note : '');
+    setPaymentHistory(calendarData?.paymentHistory ? calendarData?.paymentHistory : null);
+  }, [calendarData]);
+
+  const [showRefundModal, setShowRefundModal] = useState(false);
+  const [refundPayment, setRefundPayment] = useState(null);
+
+  const handleRefundClick = payment => {
+    console.log('handle refund click');
+    setRefundPayment(payment);
+    setShowRefundModal(true);
+  };
 
   useEffect(() => {
     console.log('newReferral', newReferral);
@@ -714,6 +747,7 @@ const JobDetailsPresenter = ({
         </Modal>
         {/* <Attachments /> */}
         <Notes notes={displayedNotes} setModal={setShowNotesModal} />
+
         <Modal visible={showNotesModal} transparent={true}>
           <TouchableWithoutFeedback onPress={() => setShowNotesModal(false)}>
             <View
@@ -740,6 +774,46 @@ const JobDetailsPresenter = ({
                     />
                   </Pressable>
                   <JobNotes value={newNotes} onChangeText={setNewNotes} />
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
+        {paymentHistory && <PaymentHistory paymentHistory={paymentHistory} handleRefundClick={handleRefundClick} />}
+
+        <Modal visible={showRefundModal} transparent={true}>
+          <TouchableWithoutFeedback onPress={() => setShowRefundModal(false)}>
+            <View
+              style={{
+                flex: 1,
+                backgroundColor: 'rgba(0, 0, 0, 0.7)',
+              }}>
+              <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <View
+                  style={{
+                    width: '90%',
+                    marginTop: '40%',
+                    marginLeft: '5%',
+                    position: 'relative',
+                    height: '20%',
+                  }}>
+                  <Pressable
+                    style={{ position: 'absolute', right: 10, top: 20, zIndex: 1 }}
+                    onPress={() => setShowRefundModal(false)}>
+                    <Image
+                      style={{
+                        width: spacing.SCALE_20,
+                        height: spacing.SCALE_20,
+                      }}
+                      source={closeIcon}
+                    />
+                  </Pressable>
+                  <Refund
+                    payment={refundPayment}
+                    setPaymentHistory={setPaymentHistory}
+                    setModal={setShowRefundModal}
+                    calendarData={calendarData}
+                  />
                 </View>
               </TouchableWithoutFeedback>
             </View>

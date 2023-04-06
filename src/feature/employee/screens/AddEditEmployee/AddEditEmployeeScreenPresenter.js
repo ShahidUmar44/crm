@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, View, Text, StyleSheet, Pressable } from 'react-native';
+import { ScrollView, View, Text, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import { useForm, Controller } from 'react-hook-form';
 
@@ -10,7 +10,9 @@ import { colors, spacing, typography } from '../../../../theme';
 import ErrorMessage from '../../../../shared/form/ErrorMessage';
 import GoBackButton from '../../../../shared/buttons/GoBackButton';
 import { RadioButton } from 'react-native-paper';
+import ColorDropdown from '../../components/ColorDropdown';
 
+import { FontAwesome } from '@expo/vector-icons';
 import eye from '@assets/images/eye.png';
 import eyeOff from '@assets/images/eye-off.png';
 import userIcon from '@assets/images/person.png';
@@ -120,10 +122,11 @@ const regex = {
   password: /(?=.*[A-Z])(?=.*[\W_])(?=.*[a-z]).{8,}/,
 };
 
-const AddEditEmployeeScreenPresenter = ({ handleBackPress, formHeader, handleAddEmployee, employee }) => {
+const AddEditEmployeeScreenPresenter = ({ handleBackPress, formHeader, handleAddEmployee, employee, isLoading }) => {
   const [showPassword, setShowPassword] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState('Admin');
+  const [selectedPlan, setSelectedPlan] = useState(employee ? employee.userType : 'Admin');
   const [phoneNumber, setPhoneNumber] = useState(employee ? employee.phone : '');
+  const [selectedColor, setSelectedColor] = useState(employee ? employee.color : { label: 'Blue', value: '#3b82f6' });
 
   const formatPhoneNumber = inputValue => {
     const cleanValue = inputValue.replace(/\D+/g, '');
@@ -169,7 +172,15 @@ const AddEditEmployeeScreenPresenter = ({ handleBackPress, formHeader, handleAdd
     if (!selectedPlan) {
       return;
     }
-    handleAddEmployee({ firstName, lastName, email, phoneNumber, password, employeeType: selectedPlan });
+    handleAddEmployee({
+      firstName,
+      lastName,
+      email,
+      phoneNumber,
+      password,
+      employeeType: selectedPlan,
+      color: selectedColor,
+    });
   };
 
   return (
@@ -336,6 +347,8 @@ const AddEditEmployeeScreenPresenter = ({ handleBackPress, formHeader, handleAdd
         )}
         {errors.password && <ErrorMessage errors={errors} name="password" alignment="center" />}
 
+        <ColorDropdown selectedColor={selectedColor} setSelectedColor={setSelectedColor} />
+
         <View style={styles.radioContainer}>
           <RadioButton.Group onValueChange={value => handlePlanChange(value)} value={selectedPlan}>
             {plans.map(plan => (
@@ -351,6 +364,7 @@ const AddEditEmployeeScreenPresenter = ({ handleBackPress, formHeader, handleAdd
             ))}
           </RadioButton.Group>
         </View>
+
         {errors.employeeType && <ErrorMessage errors={errors} name="employeeType" alignment="center" />}
 
         {/* <Controller
@@ -401,7 +415,11 @@ const AddEditEmployeeScreenPresenter = ({ handleBackPress, formHeader, handleAdd
             isLoading={false}
             loadingColor="white"
             borderColor={'transparent'}>
-            <Text style={styles.btnText}>{formHeader === 'Employee details' ? 'Back' : 'Save'}</Text>
+            {isLoading ? (
+              <ActivityIndicator size="small" color="white" />
+            ) : (
+              <Text style={styles.btnText}>{formHeader === 'Employee details' ? 'Back' : 'Save'}</Text>
+            )}
           </BigButton>
         </View>
       </View>

@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { View } from 'react-native';
 import { UserContext } from '../../../../context/UserContext';
 import { colors, spacing } from '../../../../theme';
@@ -19,6 +19,7 @@ const AddEditEmployeeScreenContainer = ({ route }) => {
   const employee = route?.params?.employee;
   const addEditEmployeeAlert = useAlertControl();
   const navigation = useNavigation();
+  const [isLoading, setIsLoading] = useState(false);
 
   const renderActionButtons = ({ close }) => {
     return (
@@ -57,14 +58,24 @@ const AddEditEmployeeScreenContainer = ({ route }) => {
     addEditEmployeeAlert.alert('Your changes will be discarded');
   };
 
-  const handleAddEmployee = async ({ firstName, lastName, email, phoneNumber, password, employeeType }) => {
+  const handleAddEmployee = async ({ firstName, lastName, email, phoneNumber, password, employeeType, color }) => {
     if (formHeader === 'Employee details') {
       navigation.goBack();
     }
+    setIsLoading(true);
     if (!employee) {
       console.log('This is where we create a new employee');
 
       let businessId = userData.userData.businessId;
+
+      //console log all the values passed in
+      console.log('firstName: ', firstName);
+      console.log('lastName: ', lastName);
+      console.log('email: ', email);
+      console.log('phoneNumber: ', phoneNumber);
+      console.log('password', password);
+      console.log('employeeType: ', employeeType);
+      console.log('color: ', color);
 
       try {
         const response = await fetch(`${node}/employees/create-employee`, {
@@ -80,6 +91,7 @@ const AddEditEmployeeScreenContainer = ({ route }) => {
             phone: phoneNumber,
             userType: employeeType,
             businessId: businessId,
+            color: color,
           }),
         });
 
@@ -127,6 +139,7 @@ const AddEditEmployeeScreenContainer = ({ route }) => {
         phone: phoneNumber,
         isAdmin: employeeType === 'Admin' ? 'true' : 'false',
         userType: employeeType,
+        color: color,
       };
 
       console.log('updateObject', updateObject);
@@ -134,6 +147,7 @@ const AddEditEmployeeScreenContainer = ({ route }) => {
       await updateDoc(employeeRef, updateObject);
       console.log('Employee updated');
     }
+    setIsLoading(false);
     navigation.navigate(SCREENS.EMPLOYEES_LIST);
   };
   return (
@@ -143,6 +157,7 @@ const AddEditEmployeeScreenContainer = ({ route }) => {
         formHeader={formHeader}
         handleAddEmployee={handleAddEmployee}
         employee={employee}
+        isLoading={isLoading}
       />
       <HomebaseAlert key="info" control={addEditEmployeeAlert} renderButtonRow={renderActionButtons} />
     </>
