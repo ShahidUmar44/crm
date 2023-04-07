@@ -42,6 +42,9 @@ export const SCREENS = {
   CHECKOUTSCREEN: 'CheckoutScreen',
   PAYMENTSCREEN: 'PaymentScreen',
   SUCCESSPAYMENT: 'SuccessPayment',
+  SETTINGS: 'Settings',
+  SETTINGSSCREEN: 'SettingsScreen',
+  USERPROFILESCREEN: 'UserProfileScreen',
 };
 
 //local

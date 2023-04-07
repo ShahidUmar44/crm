@@ -9,6 +9,7 @@ import RealEmployeeCard from '../../components/RealEmployeeCard';
 import EmptyListCard from '../../components/EmptyListCard';
 import IconButton from '../../../../shared/buttons/IconButton';
 import { colors, spacing, typography } from '../../../../theme';
+import GoBackButton from '../../../../shared/buttons/GoBackButton';
 
 import SearchIcon from '../../../../../assets/images/search-icon.png';
 
@@ -27,7 +28,6 @@ const styles = StyleSheet.create({
     marginTop: spacing.SCALE_10,
   },
   header: {
-    marginLeft: '25%',
     fontSize: typography.FONT_SIZE_20,
     fontFamily: typography.secondary,
     color: colors.primaryDarker,
@@ -77,7 +77,7 @@ const EmployeeListScreenPresenter = ({
   return (
     <View style={styles.container}>
       <View style={styles.headerWrapper}>
-        {/* <GoBackButton /> */}
+        <GoBackButton />
         <Text style={styles.header}>Team Members</Text>
         <IconButton onPress={onAddUser}>
           <AntDesign name="adduser" size={20} color={colors.primaryDarker} />

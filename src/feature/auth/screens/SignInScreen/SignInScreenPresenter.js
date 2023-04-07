@@ -22,7 +22,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: spacing.SCALE_10,
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
     backgroundColor: colors.whiteBackground,
   },
   checkbox: {
@@ -55,6 +55,7 @@ const styles = StyleSheet.create({
   formContainer: {
     width: '100%',
     paddingHorizontal: spacing.SCALE_20,
+    marginTop: spacing.SCALE_20,
   },
   rememberMeWrapper: {
     marginTop: spacing.SCALE_12,
@@ -99,7 +100,8 @@ const styles = StyleSheet.create({
 });
 
 const regex = {
-  email: /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/g,
+  email:
+    /^[a-zA-Z0-9.!#$%&'*+\-/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/,
 };
 
 const SignInScreenPresenter = ({ isLoading, onSignIn }) => {
@@ -126,101 +128,96 @@ const SignInScreenPresenter = ({ isLoading, onSignIn }) => {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <KeyboardAwareScrollView
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        extraScrollHeight={115}>
-        <View style={styles.container}>
-          <View style={styles.logoContainer}>
-            <AppLogo />
-            <Text style={styles.title}>Sign In</Text>
-            <Text style={styles.details}>Please Enter Email Address to Login</Text>
-          </View>
-          <View style={styles.formContainer}>
-            <Controller
-              name="email"
-              control={control}
-              rules={{
-                required: '*Email is required',
-                pattern: {
-                  value: regex.email,
-                  message: '*Please enter valid email address',
-                },
-              }}
-              render={({ field: { onChange, onBlur, value } }) => (
-                <Input
-                  value={value}
-                  onBlur={onBlur}
-                  onChange={onChange}
-                  onChangeText={onChange}
-                  error={errors.email}
-                  leftImage={emailIcon}
-                  placeholder={'Enter your email'}
-                  rightImage={errors.email ? errorIcon : null}
-                  rightIconStyle={styles.rightIconStyle}
-                />
-              )}
-            />
-            {errors.email && <ErrorMessage errors={errors} name="email" alignment="center" />}
-
-            <Controller
-              name="password"
-              control={control}
-              rules={{
-                required: '*Password is required',
-                minLength: {
-                  value: 4,
-                  message: '*Please enter valid password',
-                },
-              }}
-              render={({ field: { onChange, onBlur, value } }) => (
-                <Input
-                  value={value}
-                  onBlur={onBlur}
-                  onChange={onChange}
-                  onChangeText={onChange}
-                  error={errors.password}
-                  leftImage={passwordIcon}
-                  placeholder={'Enter your passsword'}
-                  secureTextEntry={showPassword}
-                  rightIconStyle={styles.rightIconStyle}
-                  rightImage={errors.password ? errorIcon : showPassword ? eyeOff : eye}
-                  onPressRightIcon={() => setShowPassword(!showPassword)}
-                />
-              )}
-            />
-            {errors.password && <ErrorMessage errors={errors} name="password" alignment="center" />}
-
-            <View style={styles.rememberMeWrapper}>
-              <Checkbox
-                style={styles.checkbox}
-                value={toggleCheckBox}
-                onValueChange={setToggleCheckBox}
-                color={toggleCheckBox ? colors.primary : undefined}
+      <View style={styles.container}>
+        <View style={styles.logoContainer}>
+          <AppLogo />
+          <Text style={styles.title}>Sign In</Text>
+        </View>
+        <View style={styles.formContainer}>
+          <Controller
+            name="email"
+            control={control}
+            rules={{
+              required: '*Email is required',
+              pattern: {
+                value: regex.email,
+                message: '*Please enter valid email address',
+              },
+            }}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <Input
+                value={value}
+                onBlur={onBlur}
+                onChange={onChange}
+                onChangeText={onChange}
+                error={errors.email}
+                leftImage={emailIcon}
+                placeholder={'Enter your email'}
+                rightImage={errors.email ? errorIcon : null}
+                rightIconStyle={styles.rightIconStyle}
               />
-              <Text style={styles.rememberMe}>Remember me</Text>
-            </View>
+            )}
+          />
+          {errors.email && <ErrorMessage errors={errors} name="email" alignment="center" />}
 
-            <View style={{ marginTop: spacing.SCALE_12 }}>
-              <BigButton
-                onPress={handleSubmit(onSubmit)}
-                color={colors.primaryDarker}
-                borderWidth={1}
-                disabled={!isValid}
-                isLoading={false}
-                loadingColor="white"
-                borderColor={'transparent'}>
-                <Text style={styles.btnText}>Sign In</Text>
-              </BigButton>
-            </View>
-            <Pressable
-              onPress={() => {
-                navigation.navigate(SCREENS.FORGET_PASSWORD);
-              }}>
-              <Text style={styles.forgetPassText}>Forget password?</Text>
-            </Pressable>
+          <Controller
+            name="password"
+            control={control}
+            rules={{
+              required: '*Password is required',
+              minLength: {
+                value: 4,
+                message: '*Please enter valid password',
+              },
+            }}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <Input
+                value={value}
+                onBlur={onBlur}
+                onChange={onChange}
+                onChangeText={onChange}
+                error={errors.password}
+                leftImage={passwordIcon}
+                placeholder={'Enter your passsword'}
+                secureTextEntry={showPassword}
+                rightIconStyle={styles.rightIconStyle}
+                rightImage={errors.password ? errorIcon : showPassword ? eyeOff : eye}
+                onPressRightIcon={() => setShowPassword(!showPassword)}
+              />
+            )}
+          />
+          {errors.password && <ErrorMessage errors={errors} name="password" alignment="center" />}
+
+          <View style={styles.rememberMeWrapper}>
+            <Checkbox
+              style={styles.checkbox}
+              value={toggleCheckBox}
+              onValueChange={setToggleCheckBox}
+              color={toggleCheckBox ? colors.primary : undefined}
+            />
+            <Text style={styles.rememberMe}>Remember me</Text>
           </View>
-          <View style={styles.bottomText}>
+
+          <View style={{ marginTop: spacing.SCALE_12 }}>
+            <BigButton
+              onPress={handleSubmit(onSubmit)}
+              color={colors.primaryDarker}
+              borderWidth={1}
+              disabled={!isValid}
+              isLoading={false}
+              loadingColor="white"
+              borderColor={'transparent'}>
+              <Text style={styles.btnText}>Sign In</Text>
+            </BigButton>
+          </View>
+          <Pressable
+            onPress={() => {
+              navigation.navigate(SCREENS.FORGET_PASSWORD);
+            }}>
+            <Text style={{ ...styles.forgetPassText, paddingBottom: 20 }}>Forgot password?</Text>
+          </Pressable>
+        </View>
+        {/* <View style={styles.bottomText}>
             <Text style={styles.dontHaveAcntText}>
               Don't have an account?{' '}
               <Pressable
@@ -230,9 +227,8 @@ const SignInScreenPresenter = ({ isLoading, onSignIn }) => {
                 <Text style={styles.signupText}>Sign-up</Text>
               </Pressable>
             </Text>
-          </View>
-        </View>
-      </KeyboardAwareScrollView>
+          </View> */}
+      </View>
     </TouchableWithoutFeedback>
   );
 };
