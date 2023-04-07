@@ -3,7 +3,8 @@ import { useColorScheme } from 'react-native';
 import { StripeProvider } from '@stripe/stripe-react-native';
 import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 
-import AppNavigation from './AppNavigation';
+import BottomTabs from './CustomTabBar';
+// import AppNavigation from './AppNavigation';
 import AuthNavigation from './AuthNavigation';
 import { UserContext } from '../context/UserContext';
 // import { SplashScreen } from '../feature/auth/screens';
@@ -54,7 +55,7 @@ export default function MainNavigator() {
           routeNameRef.current = navigationRef?.current?.getCurrentRoute().name;
         }}
         onStateChange={doHandleStateChange}>
-        {user ? <AppNavigation navigation={navigationRef} /> : <AuthNavigation />}
+        {user ? <BottomTabs navigation={navigationRef} /> : <AuthNavigation />}
       </NavigationContainer>
     </StripeProvider>
   );
