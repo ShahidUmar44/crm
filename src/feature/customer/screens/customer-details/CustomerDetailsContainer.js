@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import React, { useEffect, useState, useContext } from 'react';
 import { UserContext } from '../../../../context/UserContext';

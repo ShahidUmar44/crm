@@ -9,9 +9,7 @@ import SmallButton from '../../../../shared/buttons/SmallButton';
 import EmployeeListScreenPresenter from './EmployeeListScreenPresenter';
 import HomebaseAlert, { useAlertControl } from '../../../../shared/common/HomebaseAlert';
 import { db } from '../../../../utils/Firebase';
-import { collection, deleteDoc, doc, getDocs, limit, query, where } from 'firebase/firestore';
-import { async } from '@firebase/util';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { collection, getDocs, limit, query, where } from 'firebase/firestore';
 import { node } from '../../../../constants';
 
 const data = [

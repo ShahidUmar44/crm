@@ -1,7 +1,5 @@
 import React, { useContext, useState, useCallback } from 'react';
 import { doc, serverTimestamp, updateDoc, collection, query, getDocs, where, getDoc } from 'firebase/firestore';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { jobDetails } from '../../../../example_docs';
 import { UserContext } from '../../../../context/UserContext';
 import moment from 'moment';
 import { sendMessage } from '../../../../utils/twilio';
@@ -9,7 +7,6 @@ import { useFocusEffect } from '@react-navigation/native';
 
 import { db } from '../../../../utils/Firebase';
 import JobDetailsPresenter from './JobDetailsPresenter';
-import { useEffect } from 'react';
 
 const JobDetailsCotainer = ({ route }) => {
   const jobDetails = route?.params?.calendarData;

@@ -12,9 +12,12 @@
       "backgroundColor": "#ffffff"
     },
     "updates": {
-      "fallbackToCacheTimeout": 0
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/97486dd6-3801-4111-b4aa-13856eaabd15"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
@@ -36,6 +39,9 @@
         "projectId": "97486dd6-3801-4111-b4aa-13856eaabd15"
       }
     },
-    "owner": "shahfahad"
+    "owner": "shahfahad",
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    }
   }
 }

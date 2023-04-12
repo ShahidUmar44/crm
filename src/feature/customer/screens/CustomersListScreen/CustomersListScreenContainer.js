@@ -1,7 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { View } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserContext } from '../../../../context/UserContext';
 
 import { SCREENS } from '../../../../constants';

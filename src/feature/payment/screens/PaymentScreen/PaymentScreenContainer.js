@@ -2,7 +2,6 @@ import React, { useState, useContext, useEffect } from 'react';
 import { View, Text, TextInput, Pressable, Modal, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { doc, serverTimestamp, updateDoc, arrayUnion } from 'firebase/firestore';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useStripe, useConfirmPayment, createPaymentMethod } from '@stripe/stripe-react-native';
 
 import { db } from '../../../../utils/Firebase';
