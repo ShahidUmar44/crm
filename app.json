@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Homebase360",
-    "slug": "homebase360",
+    "slug": "homebase",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/app-icon.png",
@@ -36,10 +36,10 @@
     },
     "extra": {
       "eas": {
-        "projectId": "e2fa2140-1403-4db3-8a9b-06a63a3903de"
+        "projectId": "059876b1-a1ef-483a-9ecd-b8c70fd28d3d"
       }
     },
-    "owner": "shahfahad",
+    "owner": "shahidumar",
     "runtimeVersion": {
       "policy": "sdkVersion"
     }
